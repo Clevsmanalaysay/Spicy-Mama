@@ -48,7 +48,6 @@ export interface Project {
   seoTitle?: string;
   seoDescription?: string;
   shareImage?: string;
-  unverified?: boolean;
 }
 
 export interface SpicyEvent {

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { PlaceholderMedia } from "@/components/ui/PlaceholderMedia";
-import { UnverifiedFlag } from "@/components/ui/Badge";
 import type { Project } from "@/lib/types";
 
 const typeLabels: Record<Project["type"], string> = {
@@ -37,11 +36,6 @@ export function ProjectCard({ project, index = 0 }: { project: Project; index?: 
           <span className="shrink-0 font-display text-sm font-bold text-paper-dim">{project.year}</span>
         </div>
         <p className="mt-1 text-sm text-paper-dim">{project.role}</p>
-        {project.unverified ? (
-          <div className="mt-2">
-            <UnverifiedFlag />
-          </div>
-        ) : null}
       </div>
     </Link>
   );

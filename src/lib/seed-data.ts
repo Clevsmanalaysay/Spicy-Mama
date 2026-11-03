@@ -39,7 +39,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: true,
     order: 1,
     status: "published",
-    unverified: true,
   },
   {
     id: "dreamboi",
@@ -67,7 +66,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: true,
     order: 2,
     status: "published",
-    unverified: true,
   },
   {
     id: "sassa-gurl-maria-hiwaga",
@@ -88,7 +86,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 3,
     status: "published",
-    unverified: true,
   },
   {
     id: "sassa-gurl-mahiyain",
@@ -109,7 +106,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 4,
     status: "published",
-    unverified: true,
   },
   {
     id: "sassa-gurl-panaginip",
@@ -130,7 +126,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 5,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-maria-hiwaga-explained",
@@ -152,7 +147,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 6,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-pak-or-myth",
@@ -174,7 +168,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 7,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-kababalaghan-o-kabaklaan",
@@ -200,7 +193,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 8,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-blind-ranking-love-teams",
@@ -224,7 +216,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 9,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-digital-footprint-reveal",
@@ -245,7 +236,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 10,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-pag-ibig-ay-kanibalismo-ii",
@@ -267,7 +257,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 11,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-purgatoryo-dramatic-reading",
@@ -289,7 +278,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 12,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-newlywed-game",
@@ -310,7 +298,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 13,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-impostor-challenge",
@@ -337,7 +324,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 14,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-scream-off",
@@ -367,7 +353,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 15,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-multwoh-teaser-sassa-gurl",
@@ -388,7 +373,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 16,
     status: "published",
-    unverified: true,
   },
   {
     id: "collab-sassaverse-vol5-white-castle",
@@ -409,7 +393,6 @@ export const seedProjects: Project[] = [
     featuredOnHome: false,
     order: 17,
     status: "published",
-    unverified: true,
   },
 ];
 

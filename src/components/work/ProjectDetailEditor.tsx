@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ExternalLink, Sparkle, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Sparkle, Trash2 } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { LinkButton } from "@/components/ui/Button";
-import { Badge, UnverifiedFlag } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/Badge";
 import { Lightbox } from "@/components/ui/Lightbox";
+import { Pagination } from "@/components/ui/Pagination";
 import { PlaceholderMedia } from "@/components/ui/PlaceholderMedia";
 import { TrailerEmbed } from "@/components/work/TrailerEmbed";
 import { EditableImage } from "@/components/edit/EditableImage";
@@ -135,15 +136,6 @@ export function ProjectDetailEditor({ project: initial, slug }: { project: Proje
                 className="focus-ring w-16 rounded border border-line bg-ink px-2 py-1 text-paper"
               />
             </label>
-            <label className="flex items-center gap-2 text-xs font-semibold text-paper">
-              <input
-                type="checkbox"
-                checked={project.unverified ?? false}
-                onChange={(e) => patch({ unverified: e.target.checked })}
-                className="size-4 accent-[var(--color-hot)]"
-              />
-              Unverified (shows the yellow warning badge)
-            </label>
             {canPublish ? (
               <button
                 type="button"
@@ -178,7 +170,6 @@ export function ProjectDetailEditor({ project: initial, slug }: { project: Proje
             type="number"
             className="font-display text-sm font-bold text-paper-dim"
           />
-          {project.unverified ? <UnverifiedFlag /> : null}
         </div>
         <EditableText
           value={project.title}
@@ -397,8 +388,8 @@ function FestivalsAndPressSection({ project, patch }: { project: Project; patch:
 
 function GallerySection({ project, patch }: { project: Project; patch: (data: Partial<Project>) => void }) {
   const { editMode } = useEditMode();
-  const images = project.gallery.length ? project.gallery : editMode ? [] : Array(4).fill(undefined);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   function update(i: number, src: string) {
     const gallery = [...project.gallery];
@@ -406,31 +397,42 @@ function GallerySection({ project, patch }: { project: Project; patch: (data: Pa
     patch({ gallery });
   }
 
-  return (
-    <Section tone="raised">
-      <h2 className="font-display text-2xl font-bold">Stills</h2>
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {images.map((src: string | undefined, i: number) => (
-          <div key={i} className="relative">
-            {editMode ? (
+  function moveStill(i: number, direction: -1 | 1) {
+    const j = i + direction;
+    if (j < 0 || j >= project.gallery.length) return;
+    const gallery = [...project.gallery];
+    [gallery[i], gallery[j]] = [gallery[j], gallery[i]];
+    patch({ gallery });
+  }
+
+  if (editMode) {
+    return (
+      <Section tone="raised">
+        <h2 className="font-display text-2xl font-bold">Stills</h2>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {project.gallery.map((src, i) => (
+            <div key={i} className="relative">
               <RemoveItemButton onClick={() => patch({ gallery: project.gallery.filter((_, idx) => idx !== i) })} label="Remove still" />
-            ) : null}
-            {!editMode && src ? (
-              <button
-                type="button"
-                onClick={() => setLightboxSrc(src)}
-                className="focus-ring block aspect-[4/5] w-full overflow-hidden rounded-lg"
-                aria-label={`Expand ${project.title} still ${i + 1}`}
-              >
-                <PlaceholderMedia
-                  src={src}
-                  alt={`${project.title} still ${i + 1}`}
-                  className="h-full w-full"
-                  fit="contain"
-                  seed={i + 3}
-                />
-              </button>
-            ) : (
+              <div className="absolute bottom-2 right-2 z-10 flex gap-1">
+                <button
+                  type="button"
+                  disabled={i === 0}
+                  onClick={() => moveStill(i, -1)}
+                  className="focus-ring flex size-8 items-center justify-center rounded-full bg-ink/80 text-paper backdrop-blur hover:text-hot-bright disabled:opacity-30"
+                  aria-label="Move still earlier"
+                >
+                  <ChevronLeft className="size-4" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  disabled={i === project.gallery.length - 1}
+                  onClick={() => moveStill(i, 1)}
+                  className="focus-ring flex size-8 items-center justify-center rounded-full bg-ink/80 text-paper backdrop-blur hover:text-hot-bright disabled:opacity-30"
+                  aria-label="Move still later"
+                >
+                  <ChevronRight className="size-4" aria-hidden="true" />
+                </button>
+              </div>
               <EditableImage
                 src={src}
                 alt={`${project.title} still ${i + 1}`}
@@ -438,13 +440,11 @@ function GallerySection({ project, patch }: { project: Project; patch: (data: Pa
                 pathPrefix={`projects/${project.slug}/stills`}
                 onSave={(url) => update(i, url)}
                 fit="contain"
-                className="aspect-[4/5] rounded-lg"
+                className="aspect-video rounded-lg"
               />
-            )}
-          </div>
-        ))}
-        {editMode ? (
-          <label className="focus-ring flex aspect-[4/5] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-hot/40 font-display text-xs font-bold text-hot hover:border-hot">
+            </div>
+          ))}
+          <label className="focus-ring flex aspect-video cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-hot/40 font-display text-xs font-bold text-hot hover:border-hot">
             + Add still
             <input
               type="file"
@@ -459,8 +459,44 @@ function GallerySection({ project, patch }: { project: Project; patch: (data: Pa
               }}
             />
           </label>
-        ) : null}
+        </div>
+      </Section>
+    );
+  }
+
+  if (!project.gallery.length) return null;
+
+  const perPage = 2;
+  const totalPages = Math.max(1, Math.ceil(project.gallery.length / perPage));
+  const currentPage = Math.min(page, totalPages);
+  const visible = project.gallery.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+  return (
+    <Section tone="raised">
+      <h2 className="font-display text-2xl font-bold">Stills</h2>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {visible.map((src, i) => {
+          const idx = (currentPage - 1) * perPage + i;
+          return (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setLightboxSrc(src)}
+              className="focus-ring block aspect-video w-full overflow-hidden rounded-lg"
+              aria-label={`Expand ${project.title} still ${idx + 1}`}
+            >
+              <PlaceholderMedia
+                src={src}
+                alt={`${project.title} still ${idx + 1}`}
+                className="h-full w-full"
+                fit="contain"
+                seed={idx}
+              />
+            </button>
+          );
+        })}
       </div>
+      <Pagination currentPage={currentPage} totalPages={totalPages} onChange={setPage} />
       {lightboxSrc ? (
         <Lightbox src={lightboxSrc} alt={`${project.title} still`} onClose={() => setLightboxSrc(null)} />
       ) : null}
