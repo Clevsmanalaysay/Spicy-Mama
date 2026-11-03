@@ -31,7 +31,7 @@ export const seedProjects: Project[] = [
       "A film by Rodina Singh, starring EJ Jallorina, Tony Labrusca and Jenn Rosa. (Full synopsis still pending — confirm with the brief owner.)",
     role: "Production company",
     posterUrl: "/posters/dreamboi.png",
-    trailerUrl: undefined,
+    trailerUrl: "https://www.youtube.com/watch?v=-T2y0yn2Ymo",
     credits: [
       { name: "Rodina Singh", role: "Director" },
       { name: "EJ Jallorina", role: "Cast" },
@@ -59,7 +59,7 @@ export const seedProjects: Project[] = [
       "Logline, director and cast not yet supplied — pending the launch content checklist. (Placeholder — confirm with the brief owner.)",
     role: "Production company",
     posterUrl: "/posters/multwoh.png",
-    trailerUrl: undefined,
+    trailerUrl: "https://www.youtube.com/watch?v=uRc-eeudvS0",
     credits: [],
     festivals: [],
     pressLinks: [],
