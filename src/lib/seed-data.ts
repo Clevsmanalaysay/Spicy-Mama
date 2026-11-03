@@ -279,7 +279,7 @@ export const seedSiteSettings: SiteSettings = {
   phone: "+63 2 8000 0000",
   address: "Spicy Mama Creative Studio, Metro Manila, Philippines",
   hours: "By appointment · Events Thu–Sun, 6 PM–2 AM",
-  mapUrl: undefined,
+  mapUrl: "https://maps.app.goo.gl/4HFSCJpRtBusE5DT7",
   socials: {
     instagram: "https://www.instagram.com/spicymamastudio/",
   },

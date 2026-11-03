@@ -53,7 +53,18 @@ export default async function ContactPage({ searchParams }: { searchParams: Sear
                 <MapPin className="mt-0.5 size-5 shrink-0 text-hot" aria-hidden="true" />
                 <div>
                   <p className="font-display text-sm font-bold text-paper">Address</p>
-                  <p className="text-paper-dim">{settings.address}</p>
+                  {settings.mapUrl ? (
+                    <a
+                      href={settings.mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="focus-ring text-paper-dim underline decoration-paper-dim/40 underline-offset-2 hover:text-hot-bright hover:decoration-hot-bright"
+                    >
+                      {settings.address}
+                    </a>
+                  ) : (
+                    <p className="text-paper-dim">{settings.address}</p>
+                  )}
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -89,14 +100,16 @@ export default async function ContactPage({ searchParams }: { searchParams: Sear
             </div>
 
             {settings.mapUrl ? (
-              <div className="mt-8 aspect-video overflow-hidden rounded-xl border border-line">
-                <iframe src={settings.mapUrl} title="Map to Spicy Mama Creative Studio" className="h-full w-full" loading="lazy" />
-              </div>
-            ) : (
-              <div className="mt-8 flex aspect-video items-center justify-center rounded-xl border border-line bg-ink-soft text-sm text-paper-dim">
-                Map embed — add in Admin → Site settings
-              </div>
-            )}
+              <a
+                href={settings.mapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="focus-ring mt-8 flex items-center gap-2 rounded-full border border-line px-5 py-3 font-display text-sm font-bold text-paper transition-colors hover:border-hot hover:text-hot-bright"
+              >
+                <MapPin className="size-4" aria-hidden="true" />
+                View on Google Maps
+              </a>
+            ) : null}
           </div>
 
           <ContactForm defaultInquiryType={defaultInquiryType} />

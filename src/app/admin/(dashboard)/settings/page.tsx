@@ -103,7 +103,7 @@ export default function AdminSettingsPage() {
           </Field>
         </div>
         <div className="mt-5">
-          <Field label="Map embed URL" htmlFor="mapUrl" hint="Google Maps embed src URL">
+          <Field label="Google Maps link" htmlFor="mapUrl" hint="Where the address links to — paste a regular Google Maps share URL">
             <TextInput id="mapUrl" value={settings.mapUrl ?? ""} onChange={(e) => setSettings({ ...settings, mapUrl: e.target.value })} />
           </Field>
         </div>

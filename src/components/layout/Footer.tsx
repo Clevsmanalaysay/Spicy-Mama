@@ -99,7 +99,13 @@ export function Footer({ settings }: { settings: SiteSettings }) {
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-hot" aria-hidden="true" />
-                <span>{settings.address}</span>
+                {settings.mapUrl ? (
+                  <a href={settings.mapUrl} target="_blank" rel="noopener noreferrer" className="focus-ring hover:text-hot">
+                    {settings.address}
+                  </a>
+                ) : (
+                  <span>{settings.address}</span>
+                )}
               </li>
             </ul>
           </div>

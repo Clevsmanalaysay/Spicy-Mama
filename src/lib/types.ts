@@ -144,6 +144,7 @@ export interface SiteSettings {
   phone: string;
   address: string;
   hours: string;
+  /** Google Maps link the address links out to (a regular share URL, not an embed src). */
   mapUrl?: string;
   socials: SocialLinks;
   heroHeadline: string;
