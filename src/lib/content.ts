@@ -153,7 +153,8 @@ export async function getTeam(): Promise<TeamMember[]> {
 export async function getPress(): Promise<PressMention[]> {
   return safeQuery(async () => {
     const db = getDb()!;
-    const snap = await getDocs(collection(db, "press"));
+    const q = query(collection(db, "press"), orderBy("order", "asc"));
+    const snap = await getDocs(q);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as PressMention);
   }, seedPress);
 }

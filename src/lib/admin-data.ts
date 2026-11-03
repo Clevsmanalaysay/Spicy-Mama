@@ -20,8 +20,11 @@ import type {
   BookingStatus,
   Collaborator,
   ContactMessage,
+  FaqItem,
   MessageStatus,
+  PressMention,
   Project,
+  Service,
   SiteSettings,
   SpicyEvent,
   StaffRole,
@@ -42,6 +45,34 @@ function slugify(input: string) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+/**
+ * A small ordered-collection CRUD factory, used for the simple list content
+ * types (team, collaborators, services, FAQ, press) so each one doesn't need
+ * its own hand-written list/save/delete trio.
+ */
+function orderedCollectionCrud<T extends { id: string }>(collectionName: string) {
+  return {
+    list: async (): Promise<T[]> => {
+      const db = requireDb();
+      const snap = await getDocs(query(collection(db, collectionName), orderBy("order", "asc")));
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as T);
+    },
+    save: async (id: string | null, data: Omit<T, "id">): Promise<string> => {
+      const db = requireDb();
+      if (id) {
+        await updateDoc(doc(db, collectionName, id), data);
+        return id;
+      }
+      const docRef = await addDoc(collection(db, collectionName), data);
+      return docRef.id;
+    },
+    remove: async (id: string) => {
+      const db = requireDb();
+      await deleteDoc(doc(db, collectionName, id));
+    },
+  };
 }
 
 // ---------- Projects ----------
@@ -74,6 +105,33 @@ export async function deleteProject(id: string) {
   await deleteDoc(doc(db, "projects", id));
 }
 
+/** Single-field (or few-field) patch for inline editing, vs. saveProject's full-object save. */
+export async function patchProject(id: string, data: Partial<Omit<Project, "id">>) {
+  const db = requireDb();
+  await updateDoc(doc(db, "projects", id), data);
+}
+
+/** Creates a new draft project with sensible defaults, for the "+ New project" tile on the live Work page. */
+export async function createDraftProject(): Promise<string> {
+  const db = requireDb();
+  const docRef = await addDoc(collection(db, "projects"), {
+    slug: `untitled-${Date.now()}`,
+    title: "Untitled project",
+    type: "film",
+    year: new Date().getFullYear(),
+    logline: "",
+    role: "Production company",
+    credits: [],
+    festivals: [],
+    pressLinks: [],
+    gallery: [],
+    featuredOnHome: false,
+    order: 99,
+    status: "draft",
+  });
+  return docRef.id;
+}
+
 // ---------- Events ----------
 
 export async function listEventsAdmin(): Promise<SpicyEvent[]> {
@@ -102,6 +160,30 @@ export async function saveEvent(id: string | null, data: Omit<SpicyEvent, "id">)
 export async function deleteEvent(id: string) {
   const db = requireDb();
   await deleteDoc(doc(db, "events", id));
+}
+
+/** Single-field (or few-field) patch for inline editing, vs. saveEvent's full-object save. */
+export async function patchEvent(id: string, data: Partial<Omit<SpicyEvent, "id">>) {
+  const db = requireDb();
+  await updateDoc(doc(db, "events", id), data);
+}
+
+/** Creates a new draft event with sensible defaults, for the "+ New event" tile on the live Events page. */
+export async function createDraftEvent(): Promise<string> {
+  const db = requireDb();
+  const docRef = await addDoc(collection(db, "events"), {
+    slug: `untitled-${Date.now()}`,
+    title: "Untitled event",
+    date: new Date().toISOString().slice(0, 10),
+    type: "Other",
+    summary: "",
+    photos: [],
+    hostConsent: false,
+    isPublic: true,
+    status: "draft",
+    order: 99,
+  });
+  return docRef.id;
 }
 
 // ---------- Messages & Bookings (Inbox) ----------
@@ -153,41 +235,32 @@ export async function updateVenueContent(data: Partial<VenueContent>) {
   await setDoc(doc(db, "venue", "content"), data, { merge: true });
 }
 
-// ---------- Team & Collaborators (About / Home) ----------
+// ---------- Simple ordered lists (Team, Collaborators, Services, FAQ, Press) ----------
 
-export async function listTeamAdmin(): Promise<TeamMember[]> {
-  const db = requireDb();
-  const snap = await getDocs(query(collection(db, "team"), orderBy("order", "asc")));
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as TeamMember);
-}
+const teamCrud = orderedCollectionCrud<TeamMember>("team");
+export const listTeamAdmin = teamCrud.list;
+export const saveTeamMember = teamCrud.save;
+export const deleteTeamMember = teamCrud.remove;
 
-export async function saveTeamMember(id: string | null, data: Omit<TeamMember, "id">) {
-  const db = requireDb();
-  if (id) return void (await updateDoc(doc(db, "team", id), data));
-  await addDoc(collection(db, "team"), data);
-}
+const collaboratorsCrud = orderedCollectionCrud<Collaborator>("collaborators");
+export const listCollaboratorsAdmin = collaboratorsCrud.list;
+export const saveCollaborator = collaboratorsCrud.save;
+export const deleteCollaborator = collaboratorsCrud.remove;
 
-export async function deleteTeamMember(id: string) {
-  const db = requireDb();
-  await deleteDoc(doc(db, "team", id));
-}
+const servicesCrud = orderedCollectionCrud<Service>("services");
+export const listServicesAdmin = servicesCrud.list;
+export const saveService = servicesCrud.save;
+export const deleteService = servicesCrud.remove;
 
-export async function listCollaboratorsAdmin(): Promise<Collaborator[]> {
-  const db = requireDb();
-  const snap = await getDocs(query(collection(db, "collaborators"), orderBy("order", "asc")));
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Collaborator);
-}
+const faqCrud = orderedCollectionCrud<FaqItem>("faq");
+export const listFaqAdmin = faqCrud.list;
+export const saveFaqItem = faqCrud.save;
+export const deleteFaqItem = faqCrud.remove;
 
-export async function saveCollaborator(id: string | null, data: Omit<Collaborator, "id">) {
-  const db = requireDb();
-  if (id) return void (await updateDoc(doc(db, "collaborators", id), data));
-  await addDoc(collection(db, "collaborators"), data);
-}
-
-export async function deleteCollaborator(id: string) {
-  const db = requireDb();
-  await deleteDoc(doc(db, "collaborators", id));
-}
+const pressCrud = orderedCollectionCrud<PressMention>("press");
+export const listPressAdmin = pressCrud.list;
+export const savePressMention = pressCrud.save;
+export const deletePressMention = pressCrud.remove;
 
 // ---------- Users ----------
 

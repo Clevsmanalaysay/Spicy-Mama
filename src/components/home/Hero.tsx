@@ -1,25 +1,46 @@
+"use client";
+
+import { useState } from "react";
 import { LinkButton } from "@/components/ui/Button";
-import { PlaceholderMedia } from "@/components/ui/PlaceholderMedia";
+import { EditableImage } from "@/components/edit/EditableImage";
+import { EditableText } from "@/components/edit/EditableText";
+import { updateSiteSettings } from "@/lib/admin-data";
 import type { SiteSettings } from "@/lib/types";
 
-export function Hero({ settings }: { settings: SiteSettings }) {
+export function Hero({ settings: initial }: { settings: SiteSettings }) {
+  const [settings, setSettings] = useState(initial);
+
+  function patch(data: Partial<SiteSettings>) {
+    setSettings((s) => ({ ...s, ...data }));
+    return updateSiteSettings(data);
+  }
+
   return (
     <section className="relative overflow-hidden border-b border-line">
       <div className="absolute inset-0">
-        <PlaceholderMedia
+        <EditableImage
           src={settings.heroMedia}
           alt="Spicy Mama Creative Studio reel"
+          pathPrefix="site/hero"
+          onSave={(url) => patch({ heroMedia: url })}
           className="h-full w-full"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/20" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/20" />
       </div>
       <div className="relative mx-auto flex min-h-[78vh] max-w-6xl flex-col justify-end px-6 pb-16 pt-32 sm:min-h-[85vh]">
-        <p className="font-display text-sm font-bold uppercase tracking-[0.3em] text-hot-bright">
-          {settings.heroTagline}
-        </p>
-        <h1 className="mt-4 max-w-3xl font-display text-4xl font-bold leading-[1.05] sm:text-6xl">
-          {settings.heroHeadline}
-        </h1>
+        <EditableText
+          value={settings.heroTagline}
+          onSave={(v) => patch({ heroTagline: v })}
+          as="p"
+          className="font-display text-sm font-bold uppercase tracking-[0.3em] text-hot-bright"
+        />
+        <EditableText
+          value={settings.heroHeadline}
+          onSave={(v) => patch({ heroHeadline: v })}
+          as="h1"
+          multiline
+          className="mt-4 max-w-3xl font-display text-4xl font-bold leading-[1.05] sm:text-6xl"
+        />
         <p className="mt-5 max-w-xl text-base text-paper-dim sm:text-lg">
           Film production, brand collaborations and music videos by day. A creative studio that
           opens its doors for parties, launches and shoots by night.

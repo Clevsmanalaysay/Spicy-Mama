@@ -106,6 +106,7 @@ export interface PressMention {
   title: string;
   url: string;
   date?: string;
+  order: number;
 }
 
 export interface VenuePackage {

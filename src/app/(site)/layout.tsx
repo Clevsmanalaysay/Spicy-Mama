@@ -1,5 +1,7 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { StaffEditBar } from "@/components/edit/StaffEditBar";
+import { EditModeProvider } from "@/lib/edit-mode";
 import { getSiteSettings } from "@/lib/content";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://spicymamastudio.com";
@@ -18,7 +20,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   };
 
   return (
-    <>
+    <EditModeProvider>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
@@ -30,10 +32,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         Skip to content
       </a>
       <Header />
-      <main id="main-content" className="flex-1">
+      <main id="main-content" className="flex-1 pb-20">
         {children}
       </main>
       <Footer settings={settings} />
-    </>
+      <StaffEditBar />
+    </EditModeProvider>
   );
 }

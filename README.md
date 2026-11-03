@@ -169,8 +169,9 @@ delete a `users/{uid}` doc afterward.
 
 Carried over from the brief — replace seed/placeholder content via `/admin` before launch:
 
-- [ ] Logo source files (SVG/PNG) and exact brand hex codes — the header currently uses a text
-      wordmark stand-in (`src/components/layout/Logo.tsx`)
+- [x] Logo — `public/brand/logo.png`, used by `src/components/layout/Logo.tsx` in the header,
+      footer and admin screens. Favicon stays the hand-built sparkle mark (`src/app/icon.svg`) since
+      the full wordmark is illegible at favicon size.
 - [ ] Showreel or hero video (30–60s) / hero key art
 - [ ] *Multwoh: Patay na Patay Sa'yo* — year, logline, role, director, cast, trailer, stills, screenings
 - [ ] *Dreamboi* — confirm logline, exact credited role, trailer, stills, festival details

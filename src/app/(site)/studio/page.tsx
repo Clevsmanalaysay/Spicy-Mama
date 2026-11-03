@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { LinkButton } from "@/components/ui/Button";
-import { ServiceBlock } from "@/components/studio/ServiceBlock";
+import { ServiceBlocks } from "@/components/studio/ServiceBlocks";
 import { HowWeWork } from "@/components/studio/HowWeWork";
 import { Faq } from "@/components/ui/Faq";
 import { getFaq, getProjects, getServices } from "@/lib/content";
@@ -15,7 +15,6 @@ export const metadata: Metadata = {
 
 export default async function StudioPage() {
   const [services, faq, projects] = await Promise.all([getServices(), getFaq(), getProjects()]);
-  const projectsBySlug = new Map(projects.map((p) => [p.slug, p]));
 
   return (
     <>
@@ -26,19 +25,7 @@ export default async function StudioPage() {
       />
 
       <Section tone="dark">
-        <div className="grid gap-6 sm:grid-cols-2">
-          {services
-            .sort((a, b) => a.order - b.order)
-            .map((service) => (
-              <ServiceBlock
-                key={service.id}
-                service={service}
-                relatedProjects={service.relatedProjectSlugs
-                  .map((slug) => projectsBySlug.get(slug))
-                  .filter((p): p is NonNullable<typeof p> => Boolean(p))}
-              />
-            ))}
-        </div>
+        <ServiceBlocks services={services} projects={projects} />
       </Section>
 
       <Section tone="raised">
