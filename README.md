@@ -8,8 +8,9 @@ site current from a dashboard — no code required.
 
 - **Next.js 16** (App Router, Turbopack) + TypeScript
 - **Tailwind CSS v4** — brand tokens in `src/app/globals.css`
-- **Firebase** — Firestore (content + form submissions), Firebase Auth (staff sign-in), Cloud Storage
-  (images)
+- **Firebase** — Firestore (content + form submissions), Firebase Auth (staff sign-in)
+- **Cloudinary** — image uploads from the admin inline editor (free tier; Firebase Storage now
+  requires the paid Blaze plan, so this repo doesn't use it)
 - **Zod** for form validation, **lucide-react** for icons
 
 ## Quickstart
@@ -29,13 +30,14 @@ dashboard need a real Firebase project to function.
 1. Create a project at [console.firebase.google.com](https://console.firebase.google.com).
 2. Add a **Web app** (Project settings → General → Your apps) and copy the config into `.env.local`
    (see `.env.local.example`).
-3. Enable **Firestore** (production mode), **Authentication → Email/Password**, and **Storage**.
+3. Enable **Firestore** (production mode) and **Authentication → Email/Password**. (Image uploads use
+   Cloudinary, not Firebase Storage — see "Image uploads" below.)
 4. Deploy the security rules in this repo:
    ```bash
    npm install -g firebase-tools   # if you don't have it
    firebase login
    firebase use --add              # select your project
-   firebase deploy --only firestore:rules,firestore:indexes,storage
+   firebase deploy --only firestore:rules,firestore:indexes
    ```
 5. Create your first staff user: Firebase console → Authentication → **Add user** (email + password).
    Copy their **User UID**, then either:
@@ -45,8 +47,25 @@ dashboard need a real Firebase project to function.
 
    The very first admin has to be created manually (chicken-and-egg) — every admin after that can be
    added through the dashboard.
-6. Recommended Firebase **Extension** (optional, not required to run the site):
-   - **Resize Images** — auto-generates thumbnail/card/full sizes on upload to Storage.
+
+## Image uploads
+
+Staff can upload posters/stills/photos straight from the inline editor (click an image in edit mode).
+These go to [Cloudinary](https://cloudinary.com)'s free tier, not Firebase Storage — Storage now
+requires the project to be on the paid Blaze plan just to create a bucket, which this repo avoids.
+
+1. Create a free Cloudinary account (no card required).
+2. Note your **Cloud name** (shown on the dashboard).
+3. Settings → **Upload** tab → **Upload presets** → **Add upload preset** → set **Signing Mode** to
+   **Unsigned** (required — this is what lets the browser upload directly, no backend secret) → save.
+4. Add both to `.env.local` (see `.env.local.example`):
+   ```
+   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+   NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your-preset-name
+   ```
+
+Without these set, `uploadImage()` (`src/lib/admin-data.ts`) throws a clear "aren't configured" error
+instead of silently failing.
 
 ## Email notifications for form submissions
 
@@ -178,11 +197,8 @@ delete a `users/{uid}` doc afterward.
 
 ## What's simplified for this build (and how to extend it)
 
-- **Email notifications** on new leads need a Cloud Function + email provider (see Firebase setup
-  step 6) — the Firestore writes it would trigger on are already in place.
-- **Image resizing/WebP** is best handled by the Firebase "Resize Images" Extension rather than
-  application code — install it against the Storage paths used in `src/lib/admin-data.ts`
-  (`uploadImage`/`MultiImageUploadField`).
+- **Image resizing/WebP**: Cloudinary can do this on the fly via URL transformation parameters
+  (e.g. `/upload/w_800,q_auto,f_auto/`) — not wired up yet, but it's a URL change, not new upload code.
 - **Per-image alt text** isn't a separate admin field yet (see Accessibility notes above).
 - Member account sign-in (beyond staff) is explicitly a later phase per the brief and isn't built here.
 
@@ -215,7 +231,6 @@ src/components/       UI primitives, layout, per-page sections, admin forms
 src/lib/               types.ts, seed-data.ts, content.ts (reads), admin-data.ts (writes),
                        firebase.ts / firebase-auth.ts, validation.ts, actions.ts (public form writes)
 firestore.rules        Security rules (roles table enforced server-side)
-storage.rules           Image upload rules
 ```
 
 ## Deploying
@@ -226,5 +241,5 @@ This is a standard Next.js app — deploy it anywhere Next.js runs:
   (`apphosting.yaml` is included).
 - **Vercel**: `vercel deploy` (framework auto-detected).
 
-Either way, also deploy the Firestore/Storage rules (`firebase deploy --only firestore,storage`) and
-set the same environment variables from `.env.local` in your hosting provider's dashboard.
+Either way, also deploy the Firestore rules (`firebase deploy --only firestore`) and set the same
+environment variables from `.env.local` in your hosting provider's dashboard.

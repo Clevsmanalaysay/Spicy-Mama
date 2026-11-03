@@ -1,10 +1,10 @@
 import { type FirebaseApp, getApps, initializeApp } from "firebase/app";
 import { type Firestore, getFirestore } from "firebase/firestore";
-import { type FirebaseStorage, getStorage } from "firebase/storage";
 
-// Firestore + Storage are safe to touch from Server Components (they're used
-// to pre-render public content for SEO, per the content strategy). Firebase
-// Auth is browser-only and lives in lib/firebase-auth.ts instead.
+// Firestore is safe to touch from Server Components (it's used to pre-render
+// public content for SEO, per the content strategy). Firebase Auth is
+// browser-only and lives in lib/firebase-auth.ts instead. Image uploads use
+// Cloudinary, not Firebase Storage — see lib/admin-data.ts's uploadImage.
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,7 +22,6 @@ export const isFirebaseConfigured = Boolean(
 
 let app: FirebaseApp | undefined;
 let dbInstance: Firestore | undefined;
-let storageInstance: FirebaseStorage | undefined;
 
 /**
  * Lazily creates the Firebase app. Returns undefined when the project hasn't
@@ -42,11 +41,4 @@ export function getDb(): Firestore | undefined {
   if (!firebaseApp) return undefined;
   if (!dbInstance) dbInstance = getFirestore(firebaseApp);
   return dbInstance;
-}
-
-export function getStorageInstance(): FirebaseStorage | undefined {
-  const firebaseApp = getFirebaseApp();
-  if (!firebaseApp) return undefined;
-  if (!storageInstance) storageInstance = getStorage(firebaseApp);
-  return storageInstance;
 }

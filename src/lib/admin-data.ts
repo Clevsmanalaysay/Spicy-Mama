@@ -15,8 +15,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { getDb, getStorageInstance } from "./firebase";
+import { getDb } from "./firebase";
 import type {
   BookingRequest,
   BookingStatus,
@@ -349,15 +348,36 @@ export async function removeStaffProfile(uid: string) {
   await deleteDoc(doc(db, "users", uid));
 }
 
-// ---------- Storage uploads ----------
+// ---------- Image uploads (Cloudinary) ----------
+//
+// Firebase Storage now requires the paid Blaze plan to even create a
+// bucket, so image uploads go to Cloudinary's free tier instead — an
+// unsigned upload preset lets the browser upload directly, no backend
+// secret or server round-trip needed, same as the Storage flow this
+// replaced.
+
+const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
 export async function uploadImage(file: File, pathPrefix: string): Promise<string> {
-  const storage = getStorageInstance();
-  if (!storage) throw new Error("Firebase isn't configured — add credentials to .env.local.");
-  const path = `${pathPrefix}/${Date.now()}-${file.name}`;
-  const storageRef = ref(storage, path);
-  await uploadBytes(storageRef, file);
-  return getDownloadURL(storageRef);
+  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+    throw new Error("Image uploads aren't configured — add Cloudinary credentials to .env.local.");
+  }
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  formData.append("folder", pathPrefix);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error?.message || "Image upload failed — try again.");
+  }
+  const data = (await res.json()) as { secure_url: string };
+  return data.secure_url;
 }
 
 export const nowTimestamp = serverTimestamp;
