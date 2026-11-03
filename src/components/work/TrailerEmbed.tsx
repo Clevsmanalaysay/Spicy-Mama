@@ -43,26 +43,34 @@ export function TrailerEmbed({ trailerUrl, posterUrl, title }: { trailerUrl?: st
     );
   }
 
+  // No trailer to play: show the poster at its own aspect ratio (object-contain,
+  // never cropped) instead of forcing it into a 16:9 video frame.
+  if (!embedUrl) {
+    return (
+      <div className="flex flex-col items-center">
+        <div className="relative aspect-[4/5] w-full max-w-sm overflow-hidden rounded-xl border border-line bg-ink-soft">
+          <PlaceholderMedia src={posterUrl} alt={`${title} poster`} className="h-full w-full" fit="contain" />
+        </div>
+        <span className="mt-4 rounded-full bg-ink-soft px-3 py-1 text-xs font-semibold text-paper-dim">
+          Trailer coming soon
+        </span>
+      </div>
+    );
+  }
+
   return (
     <button
       type="button"
-      onClick={() => embedUrl && setPlaying(true)}
-      disabled={!embedUrl}
-      className="focus-ring group relative block aspect-video w-full overflow-hidden rounded-xl border border-line disabled:cursor-default"
-      aria-label={embedUrl ? `Watch ${title} trailer` : "Trailer not available yet"}
+      onClick={() => setPlaying(true)}
+      className="focus-ring group relative block aspect-video w-full overflow-hidden rounded-xl border border-line"
+      aria-label={`Watch ${title} trailer`}
     >
       <PlaceholderMedia src={posterUrl} alt={`${title} poster`} className="h-full w-full" />
-      {embedUrl ? (
-        <span className="absolute inset-0 flex items-center justify-center bg-ink/30 transition-colors group-hover:bg-ink/50">
-          <span className="flex size-16 items-center justify-center rounded-full bg-hot text-ink">
-            <Play className="size-7 translate-x-0.5 fill-ink" aria-hidden="true" />
-          </span>
+      <span className="absolute inset-0 flex items-center justify-center bg-ink/30 transition-colors group-hover:bg-ink/50">
+        <span className="flex size-16 items-center justify-center rounded-full bg-hot text-ink">
+          <Play className="size-7 translate-x-0.5 fill-ink" aria-hidden="true" />
         </span>
-      ) : (
-        <span className="absolute bottom-3 right-3 rounded-full bg-ink/80 px-3 py-1 text-xs font-semibold text-paper-dim backdrop-blur">
-          Trailer coming soon
-        </span>
-      )}
+      </span>
     </button>
   );
 }

@@ -14,6 +14,7 @@ export function PlaceholderMedia({
   className,
   seed = 0,
   fill = true,
+  fit = "cover",
 }: {
   src?: string;
   alt: string;
@@ -21,11 +22,19 @@ export function PlaceholderMedia({
   className?: string;
   seed?: number;
   fill?: boolean;
+  /** "contain" never crops — use for real posters/key art shown at their own aspect ratio. */
+  fit?: "cover" | "contain";
 }) {
   if (src) {
     return (
       <div className={cn("relative overflow-hidden", className)}>
-        <Image src={src} alt={alt} fill={fill} className="object-cover" sizes="(min-width: 1024px) 50vw, 100vw" />
+        <Image
+          src={src}
+          alt={alt}
+          fill={fill}
+          className={fit === "contain" ? "object-contain" : "object-cover"}
+          sizes="(min-width: 1024px) 50vw, 100vw"
+        />
       </div>
     );
   }
