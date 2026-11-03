@@ -72,7 +72,11 @@ export async function getProjects(options?: { type?: string; limit?: number }): 
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Project);
   }, seedProjects.filter((p) => p.status === "published"));
 
-  const filtered = options?.type ? projects.filter((p) => p.type === options.type) : projects;
+  // Firestore's own query is already orderBy("order"), but the seed-data
+  // fallback is just declaration order — sort explicitly so ordering is
+  // correct (and featured-on-home picks the right ones) regardless of source.
+  const sorted = [...projects].sort((a, b) => a.order - b.order);
+  const filtered = options?.type ? sorted.filter((p) => p.type === options.type) : sorted;
   return options?.limit ? filtered.slice(0, options.limit) : filtered;
 }
 
