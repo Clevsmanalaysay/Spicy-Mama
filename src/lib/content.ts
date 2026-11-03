@@ -83,7 +83,13 @@ export async function getProjects(options?: { type?: string; limit?: number }): 
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
   return safeDoc(async () => {
     const db = getDb()!;
-    const q = query(collection(db, "projects"), where("slug", "==", slug), fbLimit(1));
+    // Firestore rejects a list query outright if its security rule depends on
+    // a field (status) the query doesn't filter on — it can't prove the
+    // request is safe without that constraint, even though every matching
+    // doc here would individually pass. This read has no signed-in user (no
+    // Admin SDK on the server), so it could only ever see published docs
+    // anyway — filtering by status here just makes that actually work.
+    const q = query(collection(db, "projects"), where("slug", "==", slug), where("status", "==", "published"), fbLimit(1));
     const snap = await getDocs(q);
     if (snap.empty) return null;
     const d = snap.docs[0];
@@ -132,7 +138,9 @@ export async function getEvents(options?: { publicOnly?: boolean }): Promise<Spi
 export async function getEventBySlug(slug: string): Promise<SpicyEvent | null> {
   return safeDoc(async () => {
     const db = getDb()!;
-    const q = query(collection(db, "events"), where("slug", "==", slug), fbLimit(1));
+    // See getProjectBySlug for why status is filtered in the query itself,
+    // not left to the security rule alone.
+    const q = query(collection(db, "events"), where("slug", "==", slug), where("status", "==", "published"), fbLimit(1));
     const snap = await getDocs(q);
     if (snap.empty) return null;
     const d = snap.docs[0];
