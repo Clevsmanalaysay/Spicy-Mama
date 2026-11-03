@@ -190,9 +190,13 @@ export interface ContactMessage {
 
 export type StaffRole = "admin" | "editor";
 
+/** "pending" is a self-signed-up request awaiting admin approval — it grants no dashboard access. */
+export type StaffRoleOrPending = StaffRole | "pending";
+
 export interface StaffUser {
   uid: string;
   name: string;
   email: string;
-  role: StaffRole;
+  role: StaffRoleOrPending;
+  requestedAt?: string;
 }

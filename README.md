@@ -124,8 +124,20 @@ Sign in at **`/admin/login`** (staff only — linked quietly from the public foo
   (`new → held → confirmed/declined`), which also updates the public availability list.
 - **Site settings** — homepage hero, contact info, social links, venue copy/capacity/amenities/rules
   (admin-only for publishing, per the roles table above).
-- **Users** — grant/revoke dashboard access by Firebase Auth UID (see Firebase setup step 5 — this
-  app can't create Auth accounts itself, only grant roles to ones created in the Firebase console).
+- **Users** — approve/deny self-service access requests (anyone can request an account at
+  `/admin/signup`; it creates their Auth login immediately but leaves them in a powerless "pending"
+  state — see the "Signup & approval flow" section below), or grant/revoke access directly by Firebase
+  Auth UID for accounts already created in the Firebase console (see Firebase setup step 5).
+
+## Signup & approval flow
+
+`/admin/signup` is public and lets anyone create a staff login — but a fresh signup gets a
+`users/{uid}` doc with `role: "pending"`, which `firestore.rules` and `useAuth`/`AuthGuard` both treat
+as zero access: they can sign in, but land on a "waiting on approval" screen instead of the dashboard.
+An existing admin approves (assigns `admin`/`editor`) or denies (deletes the doc) from **Admin →
+Users**. The Firestore rule is deliberately narrow — a user can only ever create *their own* doc, and
+only with `role: "pending"`; they cannot self-assign a real role, and only an admin can update or
+delete a `users/{uid}` doc afterward.
 
 ## SEO, accessibility & performance notes
 

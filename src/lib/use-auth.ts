@@ -5,15 +5,17 @@ import { onAuthStateChanged, type User } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { getFirebaseAuth } from "./firebase-auth";
 import { getDb, isFirebaseConfigured } from "./firebase";
-import type { StaffRole } from "./types";
+import type { StaffRoleOrPending } from "./types";
 
 interface AuthState {
   loading: boolean;
   user: User | null;
-  role: StaffRole | null;
+  role: StaffRoleOrPending | null;
   name: string | null;
-  /** True once we've confirmed the signed-in user has a staff role document. */
+  /** True only once the role doc exists AND is "admin" or "editor" — a "pending" request is not staff. */
   isStaff: boolean;
+  /** True when the user has a users/{uid} doc but it's still awaiting admin approval. */
+  isPending: boolean;
   configured: boolean;
 }
 
@@ -30,6 +32,7 @@ export function useAuth(): AuthState {
     role: null,
     name: null,
     isStaff: false,
+    isPending: false,
     configured: isFirebaseConfigured,
   });
 
@@ -43,29 +46,31 @@ export function useAuth(): AuthState {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       unsubProfile?.();
       if (!user) {
-        setState({ loading: false, user: null, role: null, name: null, isStaff: false, configured: true });
+        setState({ loading: false, user: null, role: null, name: null, isStaff: false, isPending: false, configured: true });
         return;
       }
       const db = getDb();
       if (!db) {
-        setState({ loading: false, user, role: null, name: null, isStaff: false, configured: true });
+        setState({ loading: false, user, role: null, name: null, isStaff: false, isPending: false, configured: true });
         return;
       }
       unsubProfile = onSnapshot(
         doc(db, "users", user.uid),
         (snap) => {
           const data = snap.data();
+          const role = (data?.role as StaffRoleOrPending) ?? null;
           setState({
             loading: false,
             user,
-            role: (data?.role as StaffRole) ?? null,
+            role,
             name: (data?.name as string) ?? user.email,
-            isStaff: snap.exists() && Boolean(data?.role),
+            isStaff: role === "admin" || role === "editor",
+            isPending: role === "pending",
             configured: true,
           });
         },
         () => {
-          setState({ loading: false, user, role: null, name: user.email, isStaff: false, configured: true });
+          setState({ loading: false, user, role: null, name: user.email, isStaff: false, isPending: false, configured: true });
         },
       );
     });

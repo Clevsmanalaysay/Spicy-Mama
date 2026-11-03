@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Logo } from "@/components/layout/Logo";
 import { Button } from "@/components/ui/Button";
@@ -11,15 +12,15 @@ import { useAuth } from "@/lib/use-auth";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { user, isStaff, loading } = useAuth();
+  const { user, isStaff, isPending, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!loading && user && isStaff) router.replace("/admin");
-  }, [loading, user, isStaff, router]);
+    if (!loading && user && (isStaff || isPending)) router.replace("/admin");
+  }, [loading, user, isStaff, isPending, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -82,6 +83,13 @@ export default function AdminLoginPage() {
             </Button>
           </form>
         )}
+
+        <p className="mt-6 text-center text-sm text-paper-dim">
+          Need access?{" "}
+          <Link href="/admin/signup" className="font-semibold text-hot-bright hover:underline">
+            Request an account
+          </Link>
+        </p>
       </div>
     </div>
   );

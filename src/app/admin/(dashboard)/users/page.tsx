@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Check, X, Clock } from "lucide-react";
 import { Field, TextInput, Select } from "@/components/forms/fields";
 import { Button } from "@/components/ui/Button";
-import { listUsersAdmin, removeStaffProfile, upsertStaffProfile } from "@/lib/admin-data";
+import { approveStaffUser, listUsersAdmin, removeStaffProfile, upsertStaffProfile } from "@/lib/admin-data";
 import type { StaffRole, StaffUser } from "@/lib/types";
 
 export default function AdminUsersPage() {
@@ -12,6 +12,7 @@ export default function AdminUsersPage() {
   const [form, setForm] = useState({ uid: "", name: "", email: "", role: "editor" as StaffRole });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [approvingRole, setApprovingRole] = useState<Record<string, StaffRole>>({});
 
   function refresh() {
     listUsersAdmin()
@@ -20,6 +21,9 @@ export default function AdminUsersPage() {
   }
 
   useEffect(refresh, []);
+
+  const pending = users?.filter((u) => u.role === "pending") ?? [];
+  const staff = users?.filter((u) => u.role === "admin" || u.role === "editor") ?? [];
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -36,6 +40,17 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function handleApprove(uid: string) {
+    await approveStaffUser(uid, approvingRole[uid] ?? "editor");
+    refresh();
+  }
+
+  async function handleDeny(uid: string, name: string) {
+    if (!confirm(`Deny access for ${name}? This removes their request.`)) return;
+    await removeStaffProfile(uid);
+    refresh();
+  }
+
   async function handleRemove(uid: string) {
     if (!confirm("Remove this person's dashboard access?")) return;
     await removeStaffProfile(uid);
@@ -46,13 +61,56 @@ export default function AdminUsersPage() {
     <div className="max-w-3xl">
       <h1 className="font-display text-3xl font-bold">Staff users</h1>
       <p className="mt-1 text-ink/60">
-        Create the person&apos;s sign-in first in the Firebase console (Authentication → Add user), then grant them a
-        role here using their UID.
+        People can request access at <code className="text-hot-deep">/admin/signup</code> — approve or deny them
+        below. You can also grant access directly if you already created their sign-in in the Firebase console.
       </p>
 
       {error ? <p className="mt-4 text-sm font-semibold text-hot-deep">{error}</p> : null}
 
-      <form onSubmit={handleAdd} className="mt-6 grid gap-4 rounded-xl border border-line-light bg-white p-6 sm:grid-cols-2">
+      {pending.length ? (
+        <div className="mt-8">
+          <h2 className="flex items-center gap-2 font-display text-lg font-bold text-ink">
+            <Clock className="size-4 text-hot-deep" aria-hidden="true" />
+            Pending requests ({pending.length})
+          </h2>
+          <div className="mt-3 space-y-3">
+            {pending.map((u) => (
+              <div
+                key={u.uid}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-hot-deep/30 bg-white p-4"
+              >
+                <div>
+                  <p className="font-semibold text-ink">{u.name}</p>
+                  <p className="text-sm text-ink/60">{u.email}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={approvingRole[u.uid] ?? "editor"}
+                    onChange={(e) => setApprovingRole((r) => ({ ...r, [u.uid]: e.target.value as StaffRole }))}
+                    className="w-32"
+                  >
+                    <option value="editor">Editor</option>
+                    <option value="admin">Admin</option>
+                  </Select>
+                  <Button type="button" onClick={() => handleApprove(u.uid)} size="md">
+                    <Check className="size-4" /> Approve
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeny(u.uid, u.name)}
+                    className="focus-ring flex items-center gap-1 rounded-full border border-line-light px-4 py-3 text-xs font-bold uppercase tracking-wide text-ink/60 hover:border-hot-deep hover:text-hot-deep"
+                  >
+                    <X className="size-4" /> Deny
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <form onSubmit={handleAdd} className="mt-8 grid gap-4 rounded-xl border border-line-light bg-white p-6 sm:grid-cols-2">
+        <p className="font-display text-sm font-bold text-ink sm:col-span-2">Grant access directly</p>
         <Field label="Firebase Auth UID" htmlFor="uid" required>
           <TextInput id="uid" value={form.uid} onChange={(e) => setForm({ ...form, uid: e.target.value })} required />
         </Field>
@@ -86,7 +144,7 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody>
-            {users?.map((u) => (
+            {staff.map((u) => (
               <tr key={u.uid} className="border-b border-line-light last:border-0">
                 <td className="px-4 py-3 font-semibold text-ink">{u.name}</td>
                 <td className="px-4 py-3 text-ink/70">{u.email}</td>
@@ -98,7 +156,7 @@ export default function AdminUsersPage() {
                 </td>
               </tr>
             ))}
-            {users && !users.length ? (
+            {users && !staff.length ? (
               <tr>
                 <td colSpan={4} className="px-4 py-8 text-center text-ink/50">
                   No staff users yet.

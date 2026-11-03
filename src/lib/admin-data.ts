@@ -209,6 +209,13 @@ export async function upsertStaffProfile(uid: string, data: { name: string; emai
   await setDoc(doc(db, "users", uid), data, { merge: true });
 }
 
+/** Approves a pending self-signup request by granting it a real role. */
+export async function approveStaffUser(uid: string, role: StaffRole) {
+  const db = requireDb();
+  await updateDoc(doc(db, "users", uid), { role });
+}
+
+/** Denies a pending request (or revokes an existing staff member) by removing their profile doc. */
 export async function removeStaffProfile(uid: string) {
   const db = requireDb();
   await deleteDoc(doc(db, "users", uid));
