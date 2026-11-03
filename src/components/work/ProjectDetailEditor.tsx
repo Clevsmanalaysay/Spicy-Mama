@@ -6,6 +6,8 @@ import { ExternalLink, Sparkle, Trash2 } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { LinkButton } from "@/components/ui/Button";
 import { Badge, UnverifiedFlag } from "@/components/ui/Badge";
+import { Lightbox } from "@/components/ui/Lightbox";
+import { PlaceholderMedia } from "@/components/ui/PlaceholderMedia";
 import { TrailerEmbed } from "@/components/work/TrailerEmbed";
 import { EditableImage } from "@/components/edit/EditableImage";
 import { EditableText } from "@/components/edit/EditableText";
@@ -132,6 +134,15 @@ export function ProjectDetailEditor({ project: initial, slug }: { project: Proje
                 onChange={(e) => patch({ order: Number(e.target.value) || 0 })}
                 className="focus-ring w-16 rounded border border-line bg-ink px-2 py-1 text-paper"
               />
+            </label>
+            <label className="flex items-center gap-2 text-xs font-semibold text-paper">
+              <input
+                type="checkbox"
+                checked={project.unverified ?? false}
+                onChange={(e) => patch({ unverified: e.target.checked })}
+                className="size-4 accent-[var(--color-hot)]"
+              />
+              Unverified (shows the yellow warning badge)
             </label>
             {canPublish ? (
               <button
@@ -387,6 +398,7 @@ function FestivalsAndPressSection({ project, patch }: { project: Project; patch:
 function GallerySection({ project, patch }: { project: Project; patch: (data: Partial<Project>) => void }) {
   const { editMode } = useEditMode();
   const images = project.gallery.length ? project.gallery : editMode ? [] : Array(4).fill(undefined);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   function update(i: number, src: string) {
     const gallery = [...project.gallery];
@@ -403,14 +415,32 @@ function GallerySection({ project, patch }: { project: Project; patch: (data: Pa
             {editMode ? (
               <RemoveItemButton onClick={() => patch({ gallery: project.gallery.filter((_, idx) => idx !== i) })} label="Remove still" />
             ) : null}
-            <EditableImage
-              src={src}
-              alt={`${project.title} still ${i + 1}`}
-              seed={i + 3}
-              pathPrefix={`projects/${project.slug}/stills`}
-              onSave={(url) => update(i, url)}
-              className="aspect-[4/5] rounded-lg"
-            />
+            {!editMode && src ? (
+              <button
+                type="button"
+                onClick={() => setLightboxSrc(src)}
+                className="focus-ring block aspect-[4/5] w-full overflow-hidden rounded-lg"
+                aria-label={`Expand ${project.title} still ${i + 1}`}
+              >
+                <PlaceholderMedia
+                  src={src}
+                  alt={`${project.title} still ${i + 1}`}
+                  className="h-full w-full"
+                  fit="contain"
+                  seed={i + 3}
+                />
+              </button>
+            ) : (
+              <EditableImage
+                src={src}
+                alt={`${project.title} still ${i + 1}`}
+                seed={i + 3}
+                pathPrefix={`projects/${project.slug}/stills`}
+                onSave={(url) => update(i, url)}
+                fit="contain"
+                className="aspect-[4/5] rounded-lg"
+              />
+            )}
           </div>
         ))}
         {editMode ? (
@@ -431,6 +461,9 @@ function GallerySection({ project, patch }: { project: Project; patch: (data: Pa
           </label>
         ) : null}
       </div>
+      {lightboxSrc ? (
+        <Lightbox src={lightboxSrc} alt={`${project.title} still`} onClose={() => setLightboxSrc(null)} />
+      ) : null}
     </Section>
   );
 }
