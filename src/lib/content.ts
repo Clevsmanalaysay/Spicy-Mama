@@ -37,15 +37,29 @@ import type {
 // local seed data whenever Firestore isn't configured, a collection is still
 // empty, or a read fails — so the site always has something to show.
 
-async function safeQuery<T>(run: () => Promise<T[]>, fallback: T[]): Promise<T[]> {
+/**
+ * Merges live Firestore results with whichever seed items don't yet have a
+ * corresponding Firestore document (matched by id — an edited item is
+ * written back under the same id it had in seed data). Without this, the
+ * first edit to any one item in a collection would make every other
+ * still-seed-only item vanish from the list, since a non-empty Firestore
+ * result used to replace the seed fallback entirely instead of layering
+ * over it.
+ */
+function mergeWithSeed<T extends { id: string }>(live: T[], seed: T[]): T[] {
+  const liveIds = new Set(live.map((item) => item.id));
+  return [...live, ...seed.filter((item) => !liveIds.has(item.id))];
+}
+
+async function safeQuery<T extends { id: string }>(run: () => Promise<T[]>, seed: T[]): Promise<T[]> {
   const db = getDb();
-  if (!db) return fallback;
+  if (!db) return seed;
   try {
-    const result = await run();
-    return result.length ? result : fallback;
+    const live = await run();
+    return mergeWithSeed(live, seed);
   } catch (err) {
     console.error("content.ts query failed, using seed data:", err);
-    return fallback;
+    return seed;
   }
 }
 
@@ -62,12 +76,12 @@ async function safeDoc<T>(run: () => Promise<T | null>, fallback: T | null): Pro
 }
 
 export async function getProjects(options?: { type?: string; limit?: number }): Promise<Project[]> {
+  // No query-side limit here — it has to apply after merging with seed data
+  // (see safeQuery/mergeWithSeed), or it could cut live results off before
+  // the merge even happens.
   const projects = await safeQuery(async () => {
     const db = getDb()!;
-    const constraints = [where("status", "==", "published"), orderBy("order", "asc")];
-    const q = options?.limit
-      ? query(collection(db, "projects"), ...constraints, fbLimit(options.limit))
-      : query(collection(db, "projects"), ...constraints);
+    const q = query(collection(db, "projects"), where("status", "==", "published"), orderBy("order", "asc"));
     const snap = await getDocs(q);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Project);
   }, seedProjects.filter((p) => p.status === "published"));
