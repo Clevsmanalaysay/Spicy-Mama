@@ -111,23 +111,38 @@ Enforced in `firestore.rules`, not just the UI:
 | Manage staff users | – | – | ✅ |
 | See form submissions | – | ✅ | ✅ |
 
-## Admin dashboard
+## Editing content
 
-Sign in at **`/admin/login`** (staff only — linked quietly from the public footer, not the main nav).
+There's no separate form-based CMS screen for page content — staff edit the real public pages
+directly. Sign in at **`/admin/login`** (staff only — linked quietly from the public footer, not the
+main nav), then visit any page: a floating bar appears at the bottom with an **Edit this page**
+toggle. Turning it on turns every CMS-backed piece of content on that page into click-to-edit text,
+click-to-replace images, and add/remove controls for list content (team members, services, FAQ,
+credits, festivals, stills, etc.) — changes save to Firestore as you go, with no separate "preview"
+step, because you're always looking at the real page.
 
-- **Dashboard** — new-message/booking counts + shortcuts to every workflow below.
-- **Projects** — add/edit films & collaborations: poster + trailer, repeatable credits/festivals/press
-  links, bulk stills upload, feature-on-homepage toggle, draft → publish.
-- **Events** — add/edit events: public/private toggle, **host-consent checkbox is required before a
-  private event's photos can be published**, bulk photo upload with a cover picker.
-- **Inbox** — view contact messages and booking requests; change booking status
-  (`new → held → confirmed/declined`), which also updates the public availability list.
-- **Site settings** — homepage hero, contact info, social links, venue copy/capacity/amenities/rules
-  (admin-only for publishing, per the roles table above).
-- **Users** — approve/deny self-service access requests (anyone can request an account at
-  `/admin/signup`; it creates their Auth login immediately but leaves them in a powerless "pending"
-  state — see the "Signup & approval flow" section below), or grant/revoke access directly by Firebase
-  Auth UID for accounts already created in the Firebase console (see Firebase setup step 5).
+This covers everything the brief marks `(CMS)`: the Home hero and collaborators strip; Studio's
+service blocks and FAQ; the Venue page's space/gallery/capacity/amenities, packages and house rules;
+About's team and press mentions; Contact's info and social links; and full project/event editing on
+their own detail pages (poster, trailer, credits, festivals, press, stills, draft/publish status,
+host-consent, etc. — matching the two documented "Add a new film" / "Add an event" workflows, just
+done in place on `/work/<slug>` and `/events/<slug>` instead of a form). A **"+ Add project/event"**
+tile appears in the Work/Events grids in edit mode to create a new draft and jump straight to editing
+it.
+
+`src/lib/edit-mode.tsx` (the `EditModeProvider`/`useEditMode` context) and `src/components/edit/`
+(`EditableText`, `EditableImage`, `AddItemButton`/`RemoveItemButton`, the floating `StaffEditBar`) are
+the reusable primitives behind this — every editable page is a thin client component around them.
+Per the roles table above, editors can edit everything but only save drafts; the draft/publish select
+is disabled for editors on project/event pages, and `siteSettings`/`venue` writes are gated to admins
+in `firestore.rules` regardless of what the UI allows.
+
+The **Admin dashboard** (`/admin`) itself is only for things that aren't "page content": **Inbox**
+(contact messages and booking requests; changing a booking's status also updates the public
+availability list) and **Users** (approve/deny self-service access requests, or grant/revoke access
+directly by Firebase Auth UID — see Firebase setup step 5). `/admin/projects` and `/admin/events` are
+simple read-only indexes (useful for finding a draft that isn't on the public grid yet) that link out
+to the real pages to edit.
 
 ## Signup & approval flow
 

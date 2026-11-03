@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { EventCard } from "@/components/events/EventCard";
+import { NewEventTile } from "@/components/events/NewEventTile";
 import { LinkButton } from "@/components/ui/Button";
 import { getEvents } from "@/lib/content";
 
@@ -26,15 +27,15 @@ export default async function EventsPage() {
 
       <Section tone="dark">
         <SectionHeading eyebrow="Upcoming" title="What's on" />
-        {upcoming.length ? (
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {upcoming.map((event, i) => (
-              <EventCard key={event.id} event={event} index={i} />
-            ))}
-          </div>
-        ) : (
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {upcoming.map((event, i) => (
+            <EventCard key={event.id} event={event} index={i} />
+          ))}
+          <NewEventTile />
+        </div>
+        {!upcoming.length ? (
           <p className="mt-6 text-paper-dim">Nothing on the public calendar right now — check back soon.</p>
-        )}
+        ) : null}
       </Section>
 
       <Section tone="raised">

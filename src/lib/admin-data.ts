@@ -111,11 +111,16 @@ export async function patchProject(id: string, data: Partial<Omit<Project, "id">
   await updateDoc(doc(db, "projects", id), data);
 }
 
-/** Creates a new draft project with sensible defaults, for the "+ New project" tile on the live Work page. */
+/**
+ * Creates a new draft project with sensible defaults, for the "+ New project"
+ * tile on the live Work page. Returns the slug (not the doc id) since that's
+ * what the public route needs to navigate straight to it.
+ */
 export async function createDraftProject(): Promise<string> {
   const db = requireDb();
-  const docRef = await addDoc(collection(db, "projects"), {
-    slug: `untitled-${Date.now()}`,
+  const slug = `untitled-${Date.now()}`;
+  await addDoc(collection(db, "projects"), {
+    slug,
     title: "Untitled project",
     type: "film",
     year: new Date().getFullYear(),
@@ -129,7 +134,7 @@ export async function createDraftProject(): Promise<string> {
     order: 99,
     status: "draft",
   });
-  return docRef.id;
+  return slug;
 }
 
 // ---------- Events ----------
@@ -168,11 +173,16 @@ export async function patchEvent(id: string, data: Partial<Omit<SpicyEvent, "id"
   await updateDoc(doc(db, "events", id), data);
 }
 
-/** Creates a new draft event with sensible defaults, for the "+ New event" tile on the live Events page. */
+/**
+ * Creates a new draft event with sensible defaults, for the "+ New event"
+ * tile on the live Events page. Returns the slug (not the doc id) since
+ * that's what the public route needs to navigate straight to it.
+ */
 export async function createDraftEvent(): Promise<string> {
   const db = requireDb();
-  const docRef = await addDoc(collection(db, "events"), {
-    slug: `untitled-${Date.now()}`,
+  const slug = `untitled-${Date.now()}`;
+  await addDoc(collection(db, "events"), {
+    slug,
     title: "Untitled event",
     date: new Date().toISOString().slice(0, 10),
     type: "Other",
@@ -183,7 +193,7 @@ export async function createDraftEvent(): Promise<string> {
     status: "draft",
     order: 99,
   });
-  return docRef.id;
+  return slug;
 }
 
 // ---------- Messages & Bookings (Inbox) ----------

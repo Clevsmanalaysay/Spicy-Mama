@@ -8,7 +8,6 @@ import {
   Clapperboard,
   PartyPopper,
   Inbox,
-  Settings,
   Users,
   LogOut,
   ExternalLink,
@@ -23,7 +22,6 @@ const navItems = [
   { href: "/admin/projects", label: "Projects", icon: Clapperboard },
   { href: "/admin/events", label: "Events", icon: PartyPopper },
   { href: "/admin/inbox", label: "Inbox", icon: Inbox },
-  { href: "/admin/settings", label: "Site settings", icon: Settings, adminOnly: true },
   { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
 ];
 

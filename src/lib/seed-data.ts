@@ -235,7 +235,7 @@ export const seedTeam: TeamMember[] = [
   {
     id: "founder",
     name: "Team bios pending",
-    role: "Add team members in Admin → About",
+    role: "Sign in and turn on \"Edit this page\" to add the team",
     bio: "Names, roles, headshots and short bios are collected on the launch checklist — add the team here once supplied.",
     order: 1,
   },

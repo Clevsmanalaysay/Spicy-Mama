@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { ExternalLink, Plus } from "lucide-react";
 import { LinkButton } from "@/components/ui/Button";
 import { listProjectsAdmin } from "@/lib/admin-data";
 import type { Project } from "@/lib/types";
@@ -21,10 +21,14 @@ export default function AdminProjectsPage() {
     <div>
       <div className="flex items-center justify-between">
         <h1 className="font-display text-3xl font-bold">Projects</h1>
-        <LinkButton href="/admin/projects/new" size="md">
-          <Plus className="size-4" /> New project
+        <LinkButton href="/work" size="md">
+          <Plus className="size-4" /> Add on the live page
         </LinkButton>
       </div>
+      <p className="mt-1 text-ink/60">
+        Projects are edited directly on their live page — turn on <strong>Edit this page</strong> there. This is just
+        an index, useful for finding drafts that aren&apos;t on the public Work page yet.
+      </p>
 
       {error ? <p className="mt-6 text-sm font-semibold text-hot-deep">{error}</p> : null}
 
@@ -37,34 +41,36 @@ export default function AdminProjectsPage() {
               <th className="px-4 py-3">Year</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Featured</th>
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
             {projects?.map((p) => (
               <tr key={p.id} className="border-b border-line-light last:border-0 hover:bg-paper-dim/10">
-                <td className="px-4 py-3">
-                  <Link href={`/admin/projects/${p.id}`} className="focus-ring font-semibold text-ink hover:text-hot-deep">
-                    {p.title}
-                  </Link>
-                </td>
+                <td className="px-4 py-3 font-semibold text-ink">{p.title}</td>
                 <td className="px-4 py-3 capitalize text-ink/70">{p.type.replace("-", " ")}</td>
                 <td className="px-4 py-3 text-ink/70">{p.year}</td>
                 <td className="px-4 py-3">
                   <span className={p.status === "published" ? "text-green-700" : "text-ink/50"}>{p.status}</span>
                 </td>
                 <td className="px-4 py-3 text-ink/70">{p.featuredOnHome ? "Yes" : ""}</td>
+                <td className="px-4 py-3 text-right">
+                  <Link href={`/work/${p.slug}`} className="focus-ring inline-flex items-center gap-1 font-semibold text-hot-deep hover:underline">
+                    Edit <ExternalLink className="size-3.5" />
+                  </Link>
+                </td>
               </tr>
             ))}
             {projects && !projects.length ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-ink/50">
-                  No projects yet — add your first one.
+                <td colSpan={6} className="px-4 py-8 text-center text-ink/50">
+                  No projects yet — add your first one from the Work page.
                 </td>
               </tr>
             ) : null}
             {!projects && !error ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-ink/50">
+                <td colSpan={6} className="px-4 py-8 text-center text-ink/50">
                   Loading…
                 </td>
               </tr>

@@ -2,16 +2,19 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Clapperboard, PartyPopper, Inbox, Settings, Users, CalendarCheck } from "lucide-react";
+import { Clapperboard, PartyPopper, Inbox, Pencil, Users, Home } from "lucide-react";
 import { useAuth } from "@/lib/use-auth";
 import { listBookingsAdmin, listMessagesAdmin } from "@/lib/admin-data";
 
 const quickLinks = [
-  { href: "/admin/projects/new", label: "Add a new film or collaboration", icon: Clapperboard },
-  { href: "/admin/events/new", label: "Add an event and its photos", icon: PartyPopper },
+  { href: "/", label: "Edit the homepage", icon: Home },
+  { href: "/studio", label: "Edit services & FAQ", icon: Pencil },
+  { href: "/venue", label: "Edit the venue & house rules", icon: Pencil },
+  { href: "/about", label: "Edit team & press", icon: Pencil },
+  { href: "/contact", label: "Edit contact info & socials", icon: Pencil },
+  { href: "/work", label: "Add a new film or collaboration", icon: Clapperboard },
+  { href: "/events", label: "Add an event and its photos", icon: PartyPopper },
   { href: "/admin/inbox", label: "Handle inquiries and bookings", icon: Inbox },
-  { href: "/admin/settings", label: "Edit contact info and social links", icon: Settings },
-  { href: "/admin/settings", label: "Change the homepage", icon: CalendarCheck },
   { href: "/admin/users", label: "Manage staff", icon: Users, adminOnly: true },
 ];
 
@@ -32,7 +35,10 @@ export default function AdminDashboardPage() {
   return (
     <div>
       <h1 className="font-display text-3xl font-bold">Welcome back{name ? `, ${name}` : ""}.</h1>
-      <p className="mt-1 text-ink/60">This dashboard is a set of forms, not a website editor — pick a workflow below.</p>
+      <p className="mt-1 text-ink/60">
+        Page content is edited right on the live site — visit a page and turn on <strong>Edit this page</strong> in
+        the bar at the bottom. This dashboard is just for inquiries, bookings and staff access.
+      </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-line-light bg-white p-6">
@@ -51,7 +57,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      <h2 className="mt-10 font-display text-xl font-bold">Common workflows</h2>
+      <h2 className="mt-10 font-display text-xl font-bold">Jump to a page</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {quickLinks.map((link) => {
           if (link.adminOnly && role !== "admin") return null;
@@ -59,6 +65,7 @@ export default function AdminDashboardPage() {
             <Link
               key={link.label}
               href={link.href}
+              target={link.href.startsWith("/admin") ? undefined : "_blank"}
               className="focus-ring flex items-start gap-3 rounded-xl border border-line-light bg-white p-5 transition-colors hover:border-hot-deep"
             >
               <link.icon className="size-5 shrink-0 text-hot-deep" aria-hidden="true" />
