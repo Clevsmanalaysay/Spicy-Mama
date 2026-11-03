@@ -18,6 +18,10 @@ export const metadata: Metadata = {
     "A creative studio by day. Your party by night. Book Spicy Mama's venue for birthdays, launches, screenings, workshops and shoots.",
 };
 
+// Venue content is staff-editable via Firestore — render fresh on every
+// request instead of caching a static build-time snapshot.
+export const dynamic = "force-dynamic";
+
 export default async function VenuePage() {
   const [venue, events] = await Promise.all([getVenueContent(), getEvents()]);
 

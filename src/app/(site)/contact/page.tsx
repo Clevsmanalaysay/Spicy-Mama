@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description: "Get in touch with Spicy Mama Creative Studio for productions, collaborations, venue bookings or press.",
 };
 
+// Contact info/socials here are staff-editable via Firestore — render fresh
+// on every request instead of caching a static build-time snapshot.
+export const dynamic = "force-dynamic";
+
 type SearchParams = Promise<{ type?: string }>;
 
 export default async function ContactPage({ searchParams }: { searchParams: SearchParams }) {

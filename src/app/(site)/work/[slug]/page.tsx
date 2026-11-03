@@ -8,10 +8,10 @@ import { getProjectBySlug, getProjects } from "@/lib/content";
 
 type Params = Promise<{ slug: string }>;
 
-export async function generateStaticParams() {
-  const projects = await getProjects();
-  return projects.map((p) => ({ slug: p.slug }));
-}
+// Project content (including status/draft) is staff-editable via Firestore
+// — render fresh on every request instead of caching a static build-time
+// snapshot, or edits (and new drafts) would never show up.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;

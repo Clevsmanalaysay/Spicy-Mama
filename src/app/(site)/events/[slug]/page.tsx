@@ -3,14 +3,14 @@ import { notFound } from "next/navigation";
 import { Section } from "@/components/ui/Section";
 import { LinkButton } from "@/components/ui/Button";
 import { EventDetailEditor } from "@/components/events/EventDetailEditor";
-import { getEventBySlug, getEvents } from "@/lib/content";
+import { getEventBySlug } from "@/lib/content";
 
 type Params = Promise<{ slug: string }>;
 
-export async function generateStaticParams() {
-  const events = await getEvents();
-  return events.map((e) => ({ slug: e.slug }));
-}
+// Event content (including status/draft) is staff-editable via Firestore —
+// render fresh on every request instead of caching a static build-time
+// snapshot, or edits (and new drafts) would never show up.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;

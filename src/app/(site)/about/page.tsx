@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description: "The story, the team and the values behind Spicy Mama Creative Studio.",
 };
 
+// Team/press here are staff-editable via Firestore — render fresh on every
+// request instead of caching a static build-time snapshot.
+export const dynamic = "force-dynamic";
+
 const values = [
   "We make films that get noticed — lead with craft, not claims.",
   "We're a partner, not a vendor — co-create, build with you, idea to screen.",

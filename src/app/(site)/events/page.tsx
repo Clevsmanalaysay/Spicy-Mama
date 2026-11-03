@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description: "Upcoming screenings, workshops and pop-ups, plus recaps from past events at Spicy Mama.",
 };
 
+// Events are staff-editable via Firestore — render fresh on every request
+// instead of caching a static build-time snapshot.
+export const dynamic = "force-dynamic";
+
 export default async function EventsPage() {
   const events = await getEvents();
   const today = new Date(new Date().toDateString());

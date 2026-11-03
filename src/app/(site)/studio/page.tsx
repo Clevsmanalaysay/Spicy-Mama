@@ -13,6 +13,10 @@ export const metadata: Metadata = {
     "Film production, branded content, music videos, line production and creative direction — a production partner, not a vendor.",
 };
 
+// Services/FAQ here are staff-editable via Firestore — render fresh on every
+// request instead of caching a static build-time snapshot.
+export const dynamic = "force-dynamic";
+
 export default async function StudioPage() {
   const [services, faq, projects] = await Promise.all([getServices(), getFaq(), getProjects()]);
 

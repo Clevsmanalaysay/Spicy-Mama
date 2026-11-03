@@ -6,6 +6,11 @@ import { getSiteSettings } from "@/lib/content";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://spicymamastudio.com";
 
+// Content here (contact info, socials in the footer) is staff-editable via
+// Firestore — render fresh on every request instead of caching a static
+// build-time snapshot, or edits would never show up for visitors.
+export const dynamic = "force-dynamic";
+
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSiteSettings();
 

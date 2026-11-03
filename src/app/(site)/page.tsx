@@ -14,6 +14,10 @@ import {
   getVenueContent,
 } from "@/lib/content";
 
+// All content on this page is staff-editable via Firestore — render fresh
+// on every request instead of caching a static build-time snapshot.
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [settings, featuredProjects, collaborators, venue, events] = await Promise.all([
     getSiteSettings(),
