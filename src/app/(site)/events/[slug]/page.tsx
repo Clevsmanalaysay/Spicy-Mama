@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { Section } from "@/components/ui/Section";
 import { LinkButton } from "@/components/ui/Button";
 import { EventDetailEditor } from "@/components/events/EventDetailEditor";
@@ -26,9 +25,12 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 export default async function EventDetailPage({ params }: { params: Params }) {
   const { slug } = await params;
   const event = await getEventBySlug(slug);
-  // Drafts/private events still render — EventDetailEditor itself blocks the
-  // content from anyone who isn't signed in as staff.
-  if (!event) notFound();
+  // getEventBySlug only ever finds published events (see work/[slug]/page.tsx
+  // for why) — a brand-new draft isn't a 404, EventDetailEditor checks for
+  // it client-side as the signed-in staff user.
+  if (!event) {
+    return <EventDetailEditor event={null} slug={slug} />;
+  }
 
   const isVisible = event.status === "published" && event.isPublic;
 

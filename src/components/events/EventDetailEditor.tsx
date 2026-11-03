@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Sparkle, Trash2 } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
@@ -8,25 +8,60 @@ import { LinkButton } from "@/components/ui/Button";
 import { EditableImage } from "@/components/edit/EditableImage";
 import { EditableText } from "@/components/edit/EditableText";
 import { useEditMode } from "@/lib/edit-mode";
-import { deleteEvent, patchEvent, uploadImage } from "@/lib/admin-data";
+import { deleteEvent, getEventBySlugAsStaff, patchEvent, uploadImage } from "@/lib/admin-data";
 import { eventTypeOptions } from "@/lib/seed-data";
 import { formatDate } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import type { SpicyEvent } from "@/lib/types";
 
-export function EventDetailEditor({ event: initial }: { event: SpicyEvent }) {
+export function EventDetailEditor({ event: initial, slug }: { event: SpicyEvent | null; slug?: string }) {
   const router = useRouter();
   const { ready, canEdit, canPublish, editMode } = useEditMode();
   const [event, setEvent] = useState(initial);
+  const [draftChecked, setDraftChecked] = useState(false);
 
-  const hidden = event.status !== "published" || !event.isPublic;
-  if (hidden && !ready) {
+  // The server-side read can only ever see published events (it has no
+  // signed-in user). A null event here might just be a draft — once auth
+  // resolves, a signed-in staff member can fetch it themselves with real
+  // auth context the security rules can actually use.
+  useEffect(() => {
+    if (event || !slug || !ready || !canEdit || draftChecked) return;
+    let cancelled = false;
+    getEventBySlugAsStaff(slug)
+      .then((found) => {
+        if (cancelled) return;
+        setEvent(found);
+        setDraftChecked(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setEvent(null);
+        setDraftChecked(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [event, slug, ready, canEdit, draftChecked]);
+
+  if (!event) {
+    if (!ready || (canEdit && !draftChecked)) {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <Sparkle className="size-8 animate-sparkle fill-hot text-hot" aria-hidden="true" />
+        </div>
+      );
+    }
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Sparkle className="size-8 animate-sparkle fill-hot text-hot" aria-hidden="true" />
+      <div className="flex min-h-[50vh] flex-col items-center justify-center px-6 text-center">
+        <h1 className="font-display text-2xl font-bold">This event isn&apos;t public yet.</h1>
+        <LinkButton href="/events" className="mt-6">
+          Back to events
+        </LinkButton>
       </div>
     );
   }
+
+  const hidden = event.status !== "published" || !event.isPublic;
   if (hidden && !canEdit) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center px-6 text-center">
@@ -38,26 +73,31 @@ export function EventDetailEditor({ event: initial }: { event: SpicyEvent }) {
     );
   }
 
+  // event is guaranteed non-null past the guards above, but TypeScript
+  // doesn't carry that narrowing into closures declared below — alias it so
+  // patch/handleDelete/handlePhotoUpload can use it without a null check.
+  const currentEvent = event;
+
   function patch(data: Partial<SpicyEvent>) {
-    const next = { ...event, ...data };
+    const next = { ...currentEvent, ...data };
     setEvent(next);
     // Send the full merged object, not just the diff — see ProjectDetailEditor's
     // patch() for why (this event may only exist as seed data so far).
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- stripping id, not using it
     const { id: _id, ...payload } = next;
-    return patchEvent(event.id, payload);
+    return patchEvent(currentEvent.id, payload);
   }
 
   async function handleDelete() {
-    if (!confirm(`Delete "${event.title}"? This can't be undone.`)) return;
-    await deleteEvent(event.id);
+    if (!confirm(`Delete "${currentEvent.title}"? This can't be undone.`)) return;
+    await deleteEvent(currentEvent.id);
     router.push("/events");
   }
 
   async function handlePhotoUpload(file: File) {
-    const url = await uploadImage(file, `events/${event.slug}/photos`);
-    const photos = [...event.photos, url];
-    patch({ photos, coverUrl: event.coverUrl ?? url });
+    const url = await uploadImage(file, `events/${currentEvent.slug}/photos`);
+    const photos = [...currentEvent.photos, url];
+    patch({ photos, coverUrl: currentEvent.coverUrl ?? url });
   }
 
   return (

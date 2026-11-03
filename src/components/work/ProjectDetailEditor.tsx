@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Sparkle, Trash2 } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
@@ -11,7 +11,7 @@ import { EditableImage } from "@/components/edit/EditableImage";
 import { EditableText } from "@/components/edit/EditableText";
 import { AddItemButton, RemoveItemButton } from "@/components/edit/EditableListControls";
 import { useEditMode } from "@/lib/edit-mode";
-import { deleteProject, patchProject } from "@/lib/admin-data";
+import { deleteProject, getProjectBySlugAsStaff, patchProject } from "@/lib/admin-data";
 import { useRouter } from "next/navigation";
 import type { Credit, FestivalEntry, PressLink, Project, ProjectType } from "@/lib/types";
 
@@ -23,19 +23,54 @@ const typeLabels: Record<ProjectType, string> = {
   event: "Event",
 };
 
-export function ProjectDetailEditor({ project: initial }: { project: Project }) {
+export function ProjectDetailEditor({ project: initial, slug }: { project: Project | null; slug?: string }) {
   const router = useRouter();
   const { ready, canEdit, canPublish, editMode } = useEditMode();
   const [project, setProject] = useState(initial);
+  const [draftChecked, setDraftChecked] = useState(false);
 
-  const isDraft = project.status === "draft";
-  if (isDraft && !ready) {
+  // The server-side read can only ever see published projects (it has no
+  // signed-in user). A null project here might just be a draft — once auth
+  // resolves, a signed-in staff member can fetch it themselves with real
+  // auth context the security rules can actually use.
+  useEffect(() => {
+    if (project || !slug || !ready || !canEdit || draftChecked) return;
+    let cancelled = false;
+    getProjectBySlugAsStaff(slug)
+      .then((found) => {
+        if (cancelled) return;
+        setProject(found);
+        setDraftChecked(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setProject(null);
+        setDraftChecked(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [project, slug, ready, canEdit, draftChecked]);
+
+  if (!project) {
+    if (!ready || (canEdit && !draftChecked)) {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <Sparkle className="size-8 animate-sparkle fill-hot text-hot" aria-hidden="true" />
+        </div>
+      );
+    }
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Sparkle className="size-8 animate-sparkle fill-hot text-hot" aria-hidden="true" />
+      <div className="flex min-h-[50vh] flex-col items-center justify-center px-6 text-center">
+        <h1 className="font-display text-2xl font-bold">This project isn&apos;t published yet.</h1>
+        <LinkButton href="/work" className="mt-6">
+          Back to work
+        </LinkButton>
       </div>
     );
   }
+
+  const isDraft = project.status === "draft";
   if (isDraft && !canEdit) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center px-6 text-center">
@@ -47,8 +82,13 @@ export function ProjectDetailEditor({ project: initial }: { project: Project }) 
     );
   }
 
+  // project is guaranteed non-null past the guards above, but TypeScript
+  // doesn't carry that narrowing into closures declared below — alias it so
+  // patch/handleDelete can use it without a null check on every access.
+  const currentProject = project;
+
   function patch(data: Partial<Project>) {
-    const next = { ...project, ...data };
+    const next = { ...currentProject, ...data };
     setProject(next);
     // Send the full merged object, not just the diff — this project may
     // only exist as seed data so far, and a partial first-time write would
@@ -56,12 +96,12 @@ export function ProjectDetailEditor({ project: initial }: { project: Project }) 
     // filter on, making it invisible to the public site.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- stripping id, not using it
     const { id: _id, ...payload } = next;
-    return patchProject(project.id, payload);
+    return patchProject(currentProject.id, payload);
   }
 
   async function handleDelete() {
-    if (!confirm(`Delete "${project.title}"? This can't be undone.`)) return;
-    await deleteProject(project.id);
+    if (!confirm(`Delete "${currentProject.title}"? This can't be undone.`)) return;
+    await deleteProject(currentProject.id);
     router.push("/work");
   }
 

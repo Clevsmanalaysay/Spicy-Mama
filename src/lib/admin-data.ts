@@ -7,11 +7,13 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
   orderBy,
   query,
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { getDb, getStorageInstance } from "./firebase";
@@ -92,6 +94,25 @@ export async function getProjectAdmin(id: string): Promise<Project | null> {
   return snap.exists() ? ({ id: snap.id, ...snap.data() } as Project) : null;
 }
 
+/**
+ * Looks up a project by slug as the signed-in staff user, so a draft (one
+ * that `getProjectBySlug` in content.ts can't see — that read has no signed-in
+ * user, so it can only ever find published docs) is still reachable by the
+ * staff member who's looking right at it. Unlike content.ts's version this
+ * doesn't filter by status: the security rule lets any signed-in staff
+ * member read any project regardless of status, and since that condition
+ * doesn't depend on the document's own data, Firestore can verify it's safe
+ * without a status filter in the query.
+ */
+export async function getProjectBySlugAsStaff(slug: string): Promise<Project | null> {
+  const db = requireDb();
+  const q = query(collection(db, "projects"), where("slug", "==", slug), limit(1));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  const d = snap.docs[0];
+  return { id: d.id, ...d.data() } as Project;
+}
+
 export async function saveProject(id: string | null, data: Omit<Project, "id">): Promise<string> {
   const db = requireDb();
   const payload = { ...data, slug: data.slug || slugify(data.title) };
@@ -159,6 +180,16 @@ export async function getEventAdmin(id: string): Promise<SpicyEvent | null> {
   const db = requireDb();
   const snap = await getDoc(doc(db, "events", id));
   return snap.exists() ? ({ id: snap.id, ...snap.data() } as SpicyEvent) : null;
+}
+
+/** Looks up an event by slug as the signed-in staff user — see getProjectBySlugAsStaff. */
+export async function getEventBySlugAsStaff(slug: string): Promise<SpicyEvent | null> {
+  const db = requireDb();
+  const q = query(collection(db, "events"), where("slug", "==", slug), limit(1));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  const d = snap.docs[0];
+  return { id: d.id, ...d.data() } as SpicyEvent;
 }
 
 export async function saveEvent(id: string | null, data: Omit<SpicyEvent, "id">): Promise<string> {

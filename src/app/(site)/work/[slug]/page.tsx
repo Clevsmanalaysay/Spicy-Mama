@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { LinkButton } from "@/components/ui/Button";
 import { ProjectCard } from "@/components/work/ProjectCard";
@@ -28,9 +27,15 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 export default async function ProjectDetailPage({ params }: { params: Params }) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
-  // Drafts still render the page (staff can preview/edit them) — ProjectDetailEditor
-  // itself blocks the content from anyone who isn't signed in as staff.
-  if (!project) notFound();
+  // getProjectBySlug only ever finds published content (this server read has
+  // no signed-in user, so a draft is invisible to it) — a brand-new draft
+  // isn't a 404, it's just something only staff can see. ProjectDetailEditor
+  // handles that: with no project, it checks auth client-side and, if the
+  // viewer is signed-in staff, fetches the draft itself (with real auth
+  // context the security rules can actually use) before giving up.
+  if (!project) {
+    return <ProjectDetailEditor project={null} slug={slug} />;
+  }
 
   const allProjects = await getProjects();
   const related = allProjects.filter((p) => p.id !== project.id).slice(0, 3);
