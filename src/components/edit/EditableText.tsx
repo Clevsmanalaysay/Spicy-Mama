@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Check, X } from "lucide-react";
 import { useEditMode } from "@/lib/edit-mode";
 import { cn } from "@/lib/utils";
 
@@ -17,8 +18,11 @@ interface EditableTextProps {
 /**
  * Renders plain content when not in edit mode. In edit mode, click turns it
  * into an input/textarea in place (same tag/classes, so layout doesn't
- * jump), and it saves on blur. This is the core building block for
- * "edit the real page" admin UX — see lib/edit-mode.tsx.
+ * jump). Saves on blur or Enter, with explicit check/x buttons too (people
+ * expect a visible save action, not just "click away"). Firestore write
+ * failures are shown inline instead of failing silently — the optimistic
+ * local update elsewhere in the app would otherwise make a failed save look
+ * like it worked until the next reload.
  */
 export function EditableText({
   value,
@@ -33,7 +37,9 @@ export function EditableText({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const ref = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const committingRef = useRef(false);
 
   // Keep the draft in sync when `value` changes externally (e.g. a re-fetch),
   // without touching it while the user is mid-edit. Adjusted during render
@@ -53,37 +59,52 @@ export function EditableText({
   }
 
   async function commit() {
+    if (committingRef.current) return;
+    committingRef.current = true;
     setEditing(false);
     if (draft !== value) {
       setSaving(true);
+      setError("");
       try {
         await onSave(draft);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Couldn't save — try again.");
       } finally {
         setSaving(false);
       }
     }
+    committingRef.current = false;
+  }
+
+  function cancel() {
+    setDraft(value);
+    setEditing(false);
+    setError("");
   }
 
   if (!editing) {
     return (
-      <Tag
-        className={cn(
-          className,
-          "focus-ring cursor-text rounded outline-dashed outline-1 outline-offset-2 outline-hot/40 transition-colors hover:bg-hot/10 hover:outline-hot",
-          saving && "opacity-50",
-        )}
-        onClick={() => setEditing(true)}
-        onKeyDown={(e: React.KeyboardEvent) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setEditing(true);
-          }
-        }}
-        role="button"
-        tabIndex={0}
-      >
-        {value || <span className="italic text-hot/60">{placeholder}</span>}
-      </Tag>
+      <span className="inline-block max-w-full align-top">
+        <Tag
+          className={cn(
+            className,
+            "focus-ring cursor-text rounded outline-dashed outline-1 outline-offset-2 outline-hot/40 transition-colors hover:bg-hot/10 hover:outline-hot",
+            saving && "opacity-50",
+          )}
+          onClick={() => setEditing(true)}
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setEditing(true);
+            }
+          }}
+          role="button"
+          tabIndex={0}
+        >
+          {value || <span className="italic text-hot/60">{placeholder}</span>}
+        </Tag>
+        {error ? <span className="block text-xs font-semibold text-red-500">⚠ {error}</span> : null}
+      </span>
     );
   }
 
@@ -94,16 +115,40 @@ export function EditableText({
     onBlur: commit,
     onKeyDown: (e: React.KeyboardEvent) => {
       if (e.key === "Escape") {
-        setDraft(value);
-        setEditing(false);
+        e.preventDefault();
+        cancel();
       }
       if (e.key === "Enter" && !multiline) {
         e.preventDefault();
-        (e.target as HTMLElement).blur();
+        commit();
       }
     },
-    className: cn(className, "w-full rounded border-2 border-hot bg-ink-soft px-1 py-0.5 outline-none"),
+    className: cn(className, "w-full min-w-0 rounded border-2 border-hot bg-ink-soft px-1 py-0.5 outline-none"),
   };
 
-  return multiline ? <textarea {...commonProps} rows={3} /> : <input {...commonProps} type={type} />;
+  return (
+    <span className="inline-flex max-w-full items-start gap-1 align-top">
+      {multiline ? <textarea {...commonProps} rows={3} /> : <input {...commonProps} type={type} />}
+      <span className="flex shrink-0 gap-0.5">
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={commit}
+          aria-label="Save"
+          className="focus-ring flex size-6 items-center justify-center rounded bg-hot text-ink hover:bg-hot-bright"
+        >
+          <Check className="size-3.5" />
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={cancel}
+          aria-label="Cancel"
+          className="focus-ring flex size-6 items-center justify-center rounded bg-ink text-paper hover:bg-ink-raised"
+        >
+          <X className="size-3.5" />
+        </button>
+      </span>
+    </span>
+  );
 }
