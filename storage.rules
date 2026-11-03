@@ -1,0 +1,23 @@
+rules_version = '2';
+
+// Posters, stills, event photos, team headshots, venue photos, hero media.
+// Public read (the site renders these as plain <img> URLs); only signed-in
+// staff (admin/editor, per Firestore users/{uid}.role) can upload.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isStaff() {
+      return request.auth != null &&
+        firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['admin', 'editor'];
+    }
+
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if isStaff()
+        && request.resource.size < 15 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

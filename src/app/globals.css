@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  --color-ink: #141414;
+  --color-ink-soft: #1f1c1c;
+  --color-ink-raised: #262222;
+  --color-paper: #f5efe6;
+  --color-paper-dim: #d9cfc0;
+  --color-hot: #e8436a;
+  --color-hot-bright: #ff5b84;
+  --color-hot-deep: #a81f44;
+  --color-line: #332e2c;
+  --color-line-light: #e3d8c7;
+}
+
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-ink-raised: var(--color-ink-raised);
+  --color-paper: var(--color-paper);
+  --color-paper-dim: var(--color-paper-dim);
+  --color-hot: var(--color-hot);
+  --color-hot-bright: var(--color-hot-bright);
+  --color-hot-deep: var(--color-hot-deep);
+  --color-line: var(--color-line);
+  --color-line-light: var(--color-line-light);
+  --font-display: var(--font-space-grotesk);
+  --font-body: var(--font-inter);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--color-hot);
+  color: var(--color-ink);
+}
+
+a {
+  text-underline-offset: 3px;
+}
+
+/* Sparkle-mark loading pulse used in a few places as the recurring motif. */
+@keyframes sparkle-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.9) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.05) rotate(12deg); }
+}
+
+.animate-sparkle {
+  animation: sparkle-pulse 1.4s ease-in-out infinite;
+}
+
+.focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-hot-bright);
+  outline-offset: 3px;
+  border-radius: 2px;
+}

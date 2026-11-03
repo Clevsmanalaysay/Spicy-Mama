@@ -1,0 +1,126 @@
+rules_version = '2';
+
+// Mirrors the roles & permissions table in the content strategy:
+// visitors can read published content and write-only to bookings/messages;
+// editors can edit content but only save drafts; admins can publish, edit
+// site settings & socials, and manage staff users. See README.md for the
+// full content model this maps to.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function staffRole() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : null;
+    }
+
+    function isStaff() {
+      return isSignedIn() && staffRole() in ['admin', 'editor'];
+    }
+
+    function isAdmin() {
+      return isSignedIn() && staffRole() == 'admin';
+    }
+
+    function isPublished() {
+      return resource.data.status == 'published';
+    }
+
+    // Editors can create/update, but only admins can move status to
+    // "published" — editors' writes must keep (or set) status == 'draft'.
+    function staffWriteRespectsPublishGate() {
+      return isAdmin() || request.resource.data.status == 'draft';
+    }
+
+    // ---- Published content types (projects, events) ----
+    match /projects/{id} {
+      allow read: if isPublished() || isStaff();
+      allow create, update: if isStaff() && staffWriteRespectsPublishGate();
+      allow delete: if isAdmin();
+    }
+
+    match /events/{id} {
+      allow read: if isPublished() || isStaff();
+      allow create, update: if isStaff() && staffWriteRespectsPublishGate();
+      allow delete: if isAdmin();
+    }
+
+    // ---- Always-public reference content, staff-editable ----
+    match /services/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /collaborators/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /team/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /press/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /faq/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /pages/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // Single-doc content: venue/content
+    match /venue/{docId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // ---- Site settings: admin only (per roles table) ----
+    match /siteSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- Lead capture: write-only for visitors, staff-readable ----
+    match /bookings/{id} {
+      allow create: if true;
+      allow read, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    match /messages/{id} {
+      allow create: if true;
+      allow read, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    match /newsletterSignups/{id} {
+      allow create: if true;
+      allow read, delete: if isStaff();
+    }
+
+    // ---- Staff accounts ----
+    match /users/{uid} {
+      allow get: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Default deny for anything not explicitly listed above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
