@@ -19,7 +19,7 @@ const filters: { label: string; value: ProjectType | "all" }[] = [
   { label: "Event", value: "event" },
 ];
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 9;
 
 export function PortfolioGrid({ projects }: { projects: Project[] }) {
   const router = useRouter();
