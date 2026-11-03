@@ -80,11 +80,6 @@ export async function getProjects(options?: { type?: string; limit?: number }): 
   return options?.limit ? filtered.slice(0, options.limit) : filtered;
 }
 
-export async function getFeaturedProjects(max = 4): Promise<Project[]> {
-  const projects = await getProjects();
-  return projects.filter((p) => p.featuredOnHome).slice(0, max);
-}
-
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
   return safeDoc(async () => {
     const db = getDb()!;

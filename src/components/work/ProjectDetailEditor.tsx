@@ -85,15 +85,6 @@ export function ProjectDetailEditor({ project: initial }: { project: Project }) 
             </select>
             {!canPublish ? <span className="text-xs text-paper-dim">Only admins can publish</span> : null}
             <label className="flex items-center gap-2 text-xs font-semibold text-paper">
-              <input
-                type="checkbox"
-                checked={project.featuredOnHome}
-                onChange={(e) => patch({ featuredOnHome: e.target.checked })}
-                className="size-4 accent-[var(--color-hot)]"
-              />
-              Feature on homepage
-            </label>
-            <label className="flex items-center gap-2 text-xs font-semibold text-paper">
               Order
               <input
                 type="number"

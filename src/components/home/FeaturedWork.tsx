@@ -13,9 +13,11 @@ export function FeaturedWork({ projects }: { projects: Project[] }) {
           See all work
         </LinkButton>
       </div>
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 -mx-6 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-4 sm:mx-0 sm:px-0">
         {projects.map((project, i) => (
-          <ProjectCard key={project.id} project={project} index={i} />
+          <div key={project.id} className="w-64 shrink-0 snap-start sm:w-72">
+            <ProjectCard project={project} index={i} />
+          </div>
         ))}
       </div>
     </Section>

@@ -9,7 +9,7 @@ import { ClosingCta } from "@/components/home/ClosingCta";
 import {
   getCollaborators,
   getEvents,
-  getFeaturedProjects,
+  getProjects,
   getSiteSettings,
   getVenueContent,
 } from "@/lib/content";
@@ -19,9 +19,11 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  // Top 10 projects, already grouped Films → Music Videos → Collaborations,
+  // newest first, by getProjects()'s ordering.
   const [settings, featuredProjects, collaborators, venue, events] = await Promise.all([
     getSiteSettings(),
-    getFeaturedProjects(4),
+    getProjects({ limit: 10 }),
     getCollaborators(),
     getVenueContent(),
     getEvents(),
