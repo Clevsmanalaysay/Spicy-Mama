@@ -62,7 +62,10 @@ function orderedCollectionCrud<T extends { id: string }>(collectionName: string)
     save: async (id: string | null, data: Omit<T, "id">): Promise<string> => {
       const db = requireDb();
       if (id) {
-        await updateDoc(doc(db, collectionName, id), data);
+        // setDoc+merge (not updateDoc) because this id may only exist as seed
+        // data so far — the first edit to it needs to create the Firestore
+        // doc, not fail against a document that was never written.
+        await setDoc(doc(db, collectionName, id), data, { merge: true });
         return id;
       }
       const docRef = await addDoc(collection(db, collectionName), data);
@@ -93,7 +96,7 @@ export async function saveProject(id: string | null, data: Omit<Project, "id">):
   const db = requireDb();
   const payload = { ...data, slug: data.slug || slugify(data.title) };
   if (id) {
-    await updateDoc(doc(db, "projects", id), payload);
+    await setDoc(doc(db, "projects", id), payload, { merge: true });
     return id;
   }
   const docRef = await addDoc(collection(db, "projects"), payload);
@@ -105,10 +108,17 @@ export async function deleteProject(id: string) {
   await deleteDoc(doc(db, "projects", id));
 }
 
-/** Single-field (or few-field) patch for inline editing, vs. saveProject's full-object save. */
+/**
+ * Patch for inline editing, vs. saveProject's full-object save. Uses
+ * setDoc+merge rather than updateDoc: many projects only exist as seed data
+ * until their first edit, so there may be no Firestore document yet to
+ * update — the caller is expected to pass the full current object (not just
+ * the changed fields) so a first-time write doesn't leave a partial doc that
+ * later queries (which filter on fields like `status`/`slug`) can't find.
+ */
 export async function patchProject(id: string, data: Partial<Omit<Project, "id">>) {
   const db = requireDb();
-  await updateDoc(doc(db, "projects", id), data);
+  await setDoc(doc(db, "projects", id), data, { merge: true });
 }
 
 /**
@@ -155,7 +165,7 @@ export async function saveEvent(id: string | null, data: Omit<SpicyEvent, "id">)
   const db = requireDb();
   const payload = { ...data, slug: data.slug || slugify(data.title) };
   if (id) {
-    await updateDoc(doc(db, "events", id), payload);
+    await setDoc(doc(db, "events", id), payload, { merge: true });
     return id;
   }
   const docRef = await addDoc(collection(db, "events"), payload);
@@ -167,10 +177,14 @@ export async function deleteEvent(id: string) {
   await deleteDoc(doc(db, "events", id));
 }
 
-/** Single-field (or few-field) patch for inline editing, vs. saveEvent's full-object save. */
+/**
+ * Patch for inline editing, vs. saveEvent's full-object save. Uses
+ * setDoc+merge rather than updateDoc — see patchProject for why: events can
+ * exist only as seed data until their first edit.
+ */
 export async function patchEvent(id: string, data: Partial<Omit<SpicyEvent, "id">>) {
   const db = requireDb();
-  await updateDoc(doc(db, "events", id), data);
+  await setDoc(doc(db, "events", id), data, { merge: true });
 }
 
 /**

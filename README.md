@@ -45,17 +45,23 @@ dashboard need a real Firebase project to function.
 
    The very first admin has to be created manually (chicken-and-egg) — every admin after that can be
    added through the dashboard.
-6. Recommended Firebase **Extensions** (optional, not required to run the site):
+6. Recommended Firebase **Extension** (optional, not required to run the site):
    - **Resize Images** — auto-generates thumbnail/card/full sizes on upload to Storage.
-   - **Trigger Email** (or a Cloud Function using SendGrid/Resend) — emails `siteSettings.notifyEmail`
-     whenever a new `messages` or `bookings` document is created. A minimal trigger would look like:
-     ```js
-     exports.onNewLead = functions.firestore
-       .document("{messages,bookings}/{id}")
-       .onCreate(async (snap) => { /* send email via your provider */ });
-     ```
-     This repo ships the Firestore schema and rules this function would read from, but not the
-     function itself — wire up your preferred email provider's API key as a Cloud Functions secret.
+
+## Email notifications for form submissions
+
+Every Contact and Booking submission is always written to Firestore (the admin **Inbox**) — that part
+needs no setup. On top of that, `src/app/api/notify/route.ts` relays a copy to the studio's business
+inbox via [FormSubmit.co](https://formsubmit.co), a free form-to-email relay that needs no signup or
+API key.
+
+- The destination address is `siteSettings.notifyEmail`, editable inline on the **Contact** page
+  (in edit mode) under "Business inbox (staff-only)" — separate from the public `contactEmail` shown
+  to visitors.
+- **One-time step**: the first time a submission goes to a new `notifyEmail` address, FormSubmit emails
+  *that address* a confirmation link. Nothing gets delivered until someone clicks it.
+- If the relay fails or `notifyEmail` is unset, submissions still land in the Inbox — the email copy is
+  best-effort and never blocks or breaks the visitor-facing form.
 
 ## How content loading works
 

@@ -101,6 +101,27 @@ export function ContactInfo({ settings: initial }: { settings: SiteSettings }) {
       </ul>
 
       {editMode ? (
+        <div className="mt-8 space-y-1 rounded-lg border border-line p-4">
+          <p className="font-display text-xs font-bold uppercase tracking-wide text-paper">
+            Business inbox (staff-only)
+          </p>
+          <p className="text-xs text-paper-dim">
+            Where form submissions get emailed, on top of the admin Inbox. Different from the public email above.
+          </p>
+          <EditableText
+            value={settings.notifyEmail}
+            onSave={(v) => patch({ notifyEmail: v })}
+            placeholder="business@spicymamastudio.com"
+            className="mt-2 block text-sm text-paper"
+          />
+          <p className="text-xs text-paper-dim">
+            First time you set this to a new address, FormSubmit.co will email it a one-time confirmation link —
+            click that before submissions will arrive.
+          </p>
+        </div>
+      ) : null}
+
+      {editMode ? (
         <div className="mt-8 space-y-3">
           <p className="font-display text-xs font-bold uppercase tracking-wide text-paper">Social links</p>
           {socialFields.map(({ key, label, Icon }) => (

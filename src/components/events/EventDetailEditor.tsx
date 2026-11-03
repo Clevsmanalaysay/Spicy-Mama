@@ -39,8 +39,13 @@ export function EventDetailEditor({ event: initial }: { event: SpicyEvent }) {
   }
 
   function patch(data: Partial<SpicyEvent>) {
-    setEvent((e) => ({ ...e, ...data }));
-    return patchEvent(event.id, data);
+    const next = { ...event, ...data };
+    setEvent(next);
+    // Send the full merged object, not just the diff — see ProjectDetailEditor's
+    // patch() for why (this event may only exist as seed data so far).
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- stripping id, not using it
+    const { id: _id, ...payload } = next;
+    return patchEvent(event.id, payload);
   }
 
   async function handleDelete() {

@@ -48,8 +48,15 @@ export function ProjectDetailEditor({ project: initial }: { project: Project }) 
   }
 
   function patch(data: Partial<Project>) {
-    setProject((p) => ({ ...p, ...data }));
-    return patchProject(project.id, data);
+    const next = { ...project, ...data };
+    setProject(next);
+    // Send the full merged object, not just the diff — this project may
+    // only exist as seed data so far, and a partial first-time write would
+    // create a Firestore doc missing fields (slug, status) later queries
+    // filter on, making it invisible to the public site.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- stripping id, not using it
+    const { id: _id, ...payload } = next;
+    return patchProject(project.id, payload);
   }
 
   async function handleDelete() {
