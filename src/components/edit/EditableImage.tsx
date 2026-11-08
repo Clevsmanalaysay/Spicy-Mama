@@ -57,13 +57,17 @@ export function EditableImage({
     if (expandable && src) {
       return (
         <>
+          {/* appearance-none: a <button> keeps native widget rendering by default,
+              which in some browsers overrides the CSS aspect-ratio sizing that
+              PlaceholderMedia's box depends on — the image silently renders at
+              zero height. A plain, unsized wrapper here avoids that entirely. */}
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
-            className={cn("focus-ring block overflow-hidden", fill ? className : className?.replace(/\baspect-\S+\b/g, ""))}
+            className="focus-ring block w-full appearance-none"
             aria-label={`Expand ${alt}`}
           >
-            <PlaceholderMedia src={src} alt={alt} className={fill ? "h-full w-full" : undefined} fill={fill} fit={fit} seed={seed} label={label} />
+            <PlaceholderMedia src={src} alt={alt} className={className} fill={fill} fit={fit} seed={seed} label={label} />
           </button>
           {lightboxOpen ? <Lightbox src={src} alt={alt} onClose={() => setLightboxOpen(false)} /> : null}
         </>

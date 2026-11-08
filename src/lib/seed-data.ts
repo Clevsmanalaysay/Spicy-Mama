@@ -548,6 +548,8 @@ export const seedSiteSettings: SiteSettings = {
   },
   instagramHandle: "@spicymamastudio",
   instagramPhotos: [],
+  eventsInstagramHandle: "",
+  eventsInstagramUrl: "",
   heroHeadline: "We make films. We throw parties. Both get noticed.",
   heroTagline: "Stories with heat.",
   heroSubtext:

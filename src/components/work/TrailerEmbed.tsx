@@ -42,7 +42,7 @@ export function TrailerEmbed({ trailerUrl, posterUrl, title }: { trailerUrl?: st
     <button
       type="button"
       onClick={() => setPlaying(true)}
-      className="focus-ring group relative block aspect-video w-full overflow-hidden rounded-xl border border-line"
+      className="focus-ring group relative block aspect-video w-full appearance-none overflow-hidden rounded-xl border border-line"
       aria-label={`Watch ${title} trailer`}
     >
       <PlaceholderMedia src={posterUrl} alt={`${title} poster`} className="h-full w-full" />

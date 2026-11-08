@@ -4,6 +4,7 @@ import { Section } from "@/components/ui/Section";
 import { EditableSectionHeading } from "@/components/ui/EditableSectionHeading";
 import { EventCard } from "@/components/events/EventCard";
 import { NewEventTile } from "@/components/events/NewEventTile";
+import { EventsInstagramLink } from "@/components/events/EventsInstagramLink";
 import { LinkButton } from "@/components/ui/Button";
 import { getEvents, getSiteSettings } from "@/lib/content";
 
@@ -60,6 +61,7 @@ export default async function EventsPage() {
         <div className="mt-6">
           <LinkButton href="/venue#booking-form">Host your own event</LinkButton>
         </div>
+        <EventsInstagramLink settings={settings} />
       </Section>
     </>
   );

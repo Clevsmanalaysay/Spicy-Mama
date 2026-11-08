@@ -174,6 +174,9 @@ export interface SiteSettings {
   instagramHandle: string;
   /** Manually curated photos for the Instagram teaser grid — not a live feed. */
   instagramPhotos: string[];
+  /** The venue/events space runs its own separate Instagram account — shown on the Events page, distinct from the main studio account above. */
+  eventsInstagramHandle?: string;
+  eventsInstagramUrl?: string;
   heroHeadline: string;
   heroTagline: string;
   heroSubtext: string;
