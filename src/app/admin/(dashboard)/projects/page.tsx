@@ -2,20 +2,32 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ExternalLink, Plus } from "lucide-react";
+import { ExternalLink, Plus, Trash2 } from "lucide-react";
 import { LinkButton } from "@/components/ui/Button";
-import { listProjectsAdmin } from "@/lib/admin-data";
+import { deleteProject, listProjectsAdmin } from "@/lib/admin-data";
 import type { Project } from "@/lib/types";
 
 export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  function refresh() {
     listProjectsAdmin()
       .then(setProjects)
       .catch((err) => setError(err instanceof Error ? err.message : "Couldn't load projects"));
-  }, []);
+  }
+
+  useEffect(refresh, []);
+
+  async function handleDelete(p: Project) {
+    if (!confirm(`Delete "${p.title}"? This can't be undone.`)) return;
+    try {
+      await deleteProject(p.id);
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't delete — try again.");
+    }
+  }
 
   return (
     <div>
@@ -55,9 +67,19 @@ export default function AdminProjectsPage() {
                 </td>
                 <td className="px-4 py-3 text-ink/70">{p.featuredOnHome ? "Yes" : ""}</td>
                 <td className="px-4 py-3 text-right">
-                  <Link href={`/work/${p.slug}`} className="focus-ring inline-flex items-center gap-1 font-semibold text-hot-deep hover:underline">
-                    Edit <ExternalLink className="size-3.5" />
-                  </Link>
+                  <div className="flex items-center justify-end gap-3">
+                    <Link href={`/work/${p.slug}`} className="focus-ring inline-flex items-center gap-1 font-semibold text-hot-deep hover:underline">
+                      Edit <ExternalLink className="size-3.5" />
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(p)}
+                      className="focus-ring text-ink/40 hover:text-hot-deep"
+                      aria-label={`Delete ${p.title}`}
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

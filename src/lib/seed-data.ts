@@ -486,6 +486,7 @@ export const seedEvents: SpicyEvent[] = [
     summary:
       "Event recap pending — add past events with photos from the Admin dashboard.",
     photos: [],
+    videos: [],
     hostConsent: true,
     isPublic: true,
     status: "draft",

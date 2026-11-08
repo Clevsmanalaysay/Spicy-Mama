@@ -60,6 +60,7 @@ export interface SpicyEvent {
   description?: string;
   coverUrl?: string;
   photos: string[];
+  videos: string[];
   hostConsent: boolean;
   isPublic: boolean;
   status: ContentStatus;

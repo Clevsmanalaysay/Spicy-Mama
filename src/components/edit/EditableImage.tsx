@@ -18,6 +18,7 @@ export function EditableImage({
   seed,
   label,
   expandable = true,
+  fill = true,
 }: {
   src?: string;
   alt: string;
@@ -29,6 +30,8 @@ export function EditableImage({
   label?: string;
   /** Click-to-expand in a lightbox when not in edit mode. On by default — set false for images where that doesn't make sense (e.g. a tiny icon-like image). */
   expandable?: boolean;
+  /** False shows the upload at its own natural size/aspect ratio (no forced box, no letterbox bars) instead of filling a fixed-aspect-ratio container. */
+  fill?: boolean;
 }) {
   const { canEdit, editMode } = useEditMode();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,22 +60,22 @@ export function EditableImage({
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
-            className={cn("focus-ring block overflow-hidden", className)}
+            className={cn("focus-ring block overflow-hidden", fill ? className : className?.replace(/\baspect-\S+\b/g, ""))}
             aria-label={`Expand ${alt}`}
           >
-            <PlaceholderMedia src={src} alt={alt} className="h-full w-full" fit={fit} seed={seed} label={label} />
+            <PlaceholderMedia src={src} alt={alt} className={fill ? "h-full w-full" : undefined} fill={fill} fit={fit} seed={seed} label={label} />
           </button>
           {lightboxOpen ? <Lightbox src={src} alt={alt} onClose={() => setLightboxOpen(false)} /> : null}
         </>
       );
     }
-    return <PlaceholderMedia src={src} alt={alt} className={className} fit={fit} seed={seed} label={label} />;
+    return <PlaceholderMedia src={src} alt={alt} className={className} fill={fill} fit={fit} seed={seed} label={label} />;
   }
 
   return (
     <>
-      <div className={cn("group relative", className)}>
-        <PlaceholderMedia src={src} alt={alt} className="h-full w-full" fit={fit} seed={seed} label={label} />
+      <div className={cn("group relative", fill ? className : className?.replace(/\baspect-\S+\b/g, ""))}>
+        <PlaceholderMedia src={src} alt={alt} className={fill ? "h-full w-full" : undefined} fill={fill} fit={fit} seed={seed} label={label} />
         <button
           type="button"
           onClick={() => inputRef.current?.click()}

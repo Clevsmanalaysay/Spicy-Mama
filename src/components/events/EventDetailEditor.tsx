@@ -8,6 +8,7 @@ import { LinkButton } from "@/components/ui/Button";
 import { EditableImage } from "@/components/edit/EditableImage";
 import { EditableText } from "@/components/edit/EditableText";
 import { AddPhotoTile } from "@/components/edit/AddPhotoTile";
+import { AddVideoTile } from "@/components/edit/AddVideoTile";
 import { useEditMode } from "@/lib/edit-mode";
 import { deleteEvent, getEventBySlugAsStaff, patchEvent } from "@/lib/admin-data";
 import { eventTypeOptions } from "@/lib/seed-data";
@@ -78,6 +79,7 @@ export function EventDetailEditor({ event: initial, slug }: { event: SpicyEvent 
   // doesn't carry that narrowing into closures declared below — alias it so
   // patch/handleDelete/handlePhotoUpload can use it without a null check.
   const currentEvent = event;
+  const videos = currentEvent.videos ?? [];
 
   function patch(data: Partial<SpicyEvent>) {
     const next = { ...currentEvent, ...data };
@@ -190,7 +192,8 @@ export function EventDetailEditor({ event: initial, slug }: { event: SpicyEvent 
           pathPrefix={`events/${event.slug}/cover`}
           onSave={(url) => patch({ coverUrl: url })}
           fit="contain"
-          className="aspect-video w-full rounded-xl border border-line bg-ink-soft"
+          fill={!!event.coverUrl}
+          className={event.coverUrl ? "w-full overflow-hidden rounded-xl border border-line" : "aspect-video w-full rounded-xl border border-line bg-ink-soft"}
         />
       </Section>
 
@@ -209,6 +212,39 @@ export function EventDetailEditor({ event: initial, slug }: { event: SpicyEvent 
 
       <Section tone="dark">
         <SectionHeading eyebrow="Gallery" title="From the night" />
+
+        {videos.length || editMode ? (
+          <div className="mt-6 space-y-4">
+            {videos.map((src, i) => (
+              <div key={src} className="relative">
+                {editMode ? (
+                  <button
+                    type="button"
+                    onClick={() => patch({ videos: videos.filter((_, idx) => idx !== i) })}
+                    aria-label="Remove video"
+                    className="focus-ring absolute -right-2 -top-2 z-10 flex size-6 items-center justify-center rounded-full bg-hot text-ink shadow hover:bg-hot-bright"
+                  >
+                    ×
+                  </button>
+                ) : null}
+                <video
+                  src={src}
+                  controls
+                  playsInline
+                  className="aspect-video w-full rounded-xl border border-line bg-ink-soft object-contain"
+                />
+              </div>
+            ))}
+            {editMode ? (
+              <AddVideoTile
+                pathPrefix={`events/${currentEvent.slug}/videos`}
+                onAdd={(url) => patch({ videos: [...videos, url] })}
+                className="aspect-video w-full"
+              />
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {(event.photos.length ? event.photos : editMode ? [] : Array(4).fill(undefined)).map(
             (src: string | undefined, i: number) => (

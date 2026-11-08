@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ExternalLink, Plus } from "lucide-react";
+import { ExternalLink, Plus, Trash2 } from "lucide-react";
 import { LinkButton } from "@/components/ui/Button";
-import { listEventsAdmin } from "@/lib/admin-data";
+import { deleteEvent, listEventsAdmin } from "@/lib/admin-data";
 import { formatDate } from "@/lib/utils";
 import type { SpicyEvent } from "@/lib/types";
 
@@ -12,11 +12,23 @@ export default function AdminEventsPage() {
   const [events, setEvents] = useState<SpicyEvent[] | null>(null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  function refresh() {
     listEventsAdmin()
       .then(setEvents)
       .catch((err) => setError(err instanceof Error ? err.message : "Couldn't load events"));
-  }, []);
+  }
+
+  useEffect(refresh, []);
+
+  async function handleDelete(e: SpicyEvent) {
+    if (!confirm(`Delete "${e.title}"? This can't be undone.`)) return;
+    try {
+      await deleteEvent(e.id);
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't delete — try again.");
+    }
+  }
 
   return (
     <div>
@@ -56,9 +68,19 @@ export default function AdminEventsPage() {
                   <span className={e.status === "published" ? "text-green-700" : "text-ink/50"}>{e.status}</span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <Link href={`/events/${e.slug}`} className="focus-ring inline-flex items-center gap-1 font-semibold text-hot-deep hover:underline">
-                    Edit <ExternalLink className="size-3.5" />
-                  </Link>
+                  <div className="flex items-center justify-end gap-3">
+                    <Link href={`/events/${e.slug}`} className="focus-ring inline-flex items-center gap-1 font-semibold text-hot-deep hover:underline">
+                      Edit <ExternalLink className="size-3.5" />
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(e)}
+                      className="focus-ring text-ink/40 hover:text-hot-deep"
+                      aria-label={`Delete ${e.title}`}
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

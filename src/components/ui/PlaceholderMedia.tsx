@@ -26,12 +26,22 @@ export function PlaceholderMedia({
   fit?: "cover" | "contain";
 }) {
   if (src) {
+    // next/image's `fill` mode requires a parent with an already-fixed
+    // aspect ratio (hence `fit="contain"` still letterboxes inside it).
+    // `fill={false}` instead renders a plain <img> at its own natural size
+    // — no forced box, no bars — for the few spots (e.g. an event's header
+    // photo) that should show the upload exactly as-is.
+    if (!fill) {
+      // next/image requires width+height without fill, which we don't know for an arbitrary upload.
+      // eslint-disable-next-line @next/next/no-img-element
+      return <img src={src} alt={alt} className={cn("h-auto w-full", className)} />;
+    }
     return (
       <div className={cn("relative overflow-hidden", className)}>
         <Image
           src={src}
           alt={alt}
-          fill={fill}
+          fill
           className={fit === "contain" ? "object-contain" : "object-cover"}
           sizes="(min-width: 1024px) 50vw, 100vw"
         />

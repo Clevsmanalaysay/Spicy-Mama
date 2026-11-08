@@ -234,6 +234,7 @@ export async function createDraftEvent(defaultDate?: string): Promise<string> {
     type: "Other",
     summary: "",
     photos: [],
+    videos: [],
     hostConsent: false,
     isPublic: true,
     status: "draft",
@@ -401,6 +402,27 @@ export async function uploadImage(file: File, pathPrefix: string): Promise<strin
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     throw new Error(body?.error?.message || "Image upload failed — try again.");
+  }
+  const data = (await res.json()) as { secure_url: string };
+  return data.secure_url;
+}
+
+export async function uploadVideo(file: File, pathPrefix: string): Promise<string> {
+  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+    throw new Error("Video uploads aren't configured — add Cloudinary credentials to .env.local.");
+  }
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  formData.append("folder", pathPrefix);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error?.message || "Video upload failed — try again.");
   }
   const data = (await res.json()) as { secure_url: string };
   return data.secure_url;
