@@ -13,6 +13,7 @@ import { TrailerEmbed } from "@/components/work/TrailerEmbed";
 import { EditableImage } from "@/components/edit/EditableImage";
 import { EditableText } from "@/components/edit/EditableText";
 import { AddItemButton, RemoveItemButton } from "@/components/edit/EditableListControls";
+import { AddPhotoTile } from "@/components/edit/AddPhotoTile";
 import { useEditMode } from "@/lib/edit-mode";
 import { deleteProject, getProjectBySlugAsStaff, patchProject } from "@/lib/admin-data";
 import { useRouter } from "next/navigation";
@@ -453,21 +454,12 @@ function GallerySection({ project, patch }: { project: Project; patch: (data: Pa
               />
             </div>
           ))}
-          <label className="focus-ring flex aspect-video cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-hot/40 font-display text-xs font-bold text-hot hover:border-hot">
-            + Add still
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const { uploadImage } = await import("@/lib/admin-data");
-                const url = await uploadImage(file, `projects/${project.slug}/stills`);
-                patch({ gallery: [...project.gallery, url] });
-              }}
-            />
-          </label>
+          <AddPhotoTile
+            pathPrefix={`projects/${project.slug}/stills`}
+            onAdd={(url) => patch({ gallery: [...project.gallery, url] })}
+            label="+ Add still"
+            className="aspect-video"
+          />
         </div>
       </Section>
     );

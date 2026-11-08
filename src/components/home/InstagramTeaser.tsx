@@ -6,9 +6,10 @@ import { LinkButton } from "@/components/ui/Button";
 import { InstagramIcon } from "@/components/ui/SocialIcons";
 import { EditableText } from "@/components/edit/EditableText";
 import { EditableImage } from "@/components/edit/EditableImage";
+import { AddPhotoTile } from "@/components/edit/AddPhotoTile";
 import { RemoveItemButton } from "@/components/edit/EditableListControls";
 import { useEditMode } from "@/lib/edit-mode";
-import { updateSiteSettings, uploadImage } from "@/lib/admin-data";
+import { updateSiteSettings } from "@/lib/admin-data";
 import type { SiteSettings } from "@/lib/types";
 
 export function InstagramTeaser({ settings: initial }: { settings: SiteSettings }) {
@@ -81,20 +82,7 @@ export function InstagramTeaser({ settings: initial }: { settings: SiteSettings 
             </div>
           ))}
           {editMode ? (
-            <label className="focus-ring flex aspect-square cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-hot/40 font-display text-xs font-bold text-hot hover:border-hot">
-              + Add photo
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const url = await uploadImage(file, "site/instagram");
-                  patchPhotos([...photos, url]);
-                }}
-              />
-            </label>
+            <AddPhotoTile pathPrefix="site/instagram" onAdd={(url) => patchPhotos([...photos, url])} className="aspect-square" />
           ) : null}
         </div>
       ) : null}

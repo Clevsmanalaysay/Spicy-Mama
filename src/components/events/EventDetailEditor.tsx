@@ -7,8 +7,9 @@ import { Section, SectionHeading } from "@/components/ui/Section";
 import { LinkButton } from "@/components/ui/Button";
 import { EditableImage } from "@/components/edit/EditableImage";
 import { EditableText } from "@/components/edit/EditableText";
+import { AddPhotoTile } from "@/components/edit/AddPhotoTile";
 import { useEditMode } from "@/lib/edit-mode";
-import { deleteEvent, getEventBySlugAsStaff, patchEvent, uploadImage } from "@/lib/admin-data";
+import { deleteEvent, getEventBySlugAsStaff, patchEvent } from "@/lib/admin-data";
 import { eventTypeOptions } from "@/lib/seed-data";
 import { formatDate } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -92,12 +93,6 @@ export function EventDetailEditor({ event: initial, slug }: { event: SpicyEvent 
     if (!confirm(`Delete "${currentEvent.title}"? This can't be undone.`)) return;
     await deleteEvent(currentEvent.id);
     router.push("/events");
-  }
-
-  async function handlePhotoUpload(file: File) {
-    const url = await uploadImage(file, `events/${currentEvent.slug}/photos`);
-    const photos = [...currentEvent.photos, url];
-    patch({ photos, coverUrl: currentEvent.coverUrl ?? url });
   }
 
   return (
@@ -244,18 +239,11 @@ export function EventDetailEditor({ event: initial, slug }: { event: SpicyEvent 
             ),
           )}
           {editMode ? (
-            <label className="focus-ring flex aspect-[4/5] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-hot/40 font-display text-xs font-bold text-hot hover:border-hot">
-              + Add photo
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handlePhotoUpload(file);
-                }}
-              />
-            </label>
+            <AddPhotoTile
+              pathPrefix={`events/${currentEvent.slug}/photos`}
+              onAdd={(url) => patch({ photos: [...currentEvent.photos, url], coverUrl: currentEvent.coverUrl ?? url })}
+              className="aspect-[4/5]"
+            />
           ) : null}
         </div>
       </Section>

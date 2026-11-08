@@ -5,8 +5,9 @@ import { SparkleBullet } from "@/components/ui/SparkleDivider";
 import { EditableImage } from "@/components/edit/EditableImage";
 import { EditableText } from "@/components/edit/EditableText";
 import { AddItemButton } from "@/components/edit/EditableListControls";
+import { AddPhotoTile } from "@/components/edit/AddPhotoTile";
 import { useEditMode } from "@/lib/edit-mode";
-import { updateVenueContent, uploadImage } from "@/lib/admin-data";
+import { updateVenueContent } from "@/lib/admin-data";
 import type { VenueContent } from "@/lib/types";
 
 export function TheSpace({ venue: initial }: { venue: VenueContent }) {
@@ -23,11 +24,6 @@ export function TheSpace({ venue: initial }: { venue: VenueContent }) {
     const gallery = [...venue.gallery];
     gallery[i] = src;
     await patch({ gallery });
-  }
-
-  async function handleAddPhoto(file: File) {
-    const url = await uploadImage(file, "venue/gallery");
-    await patch({ gallery: [...venue.gallery, url] });
   }
 
   function patchAmenity(i: number, value: string) {
@@ -50,18 +46,7 @@ export function TheSpace({ venue: initial }: { venue: VenueContent }) {
           />
         ))}
         {editMode ? (
-          <label className="focus-ring flex aspect-square cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-hot/40 font-display text-xs font-bold text-hot hover:border-hot">
-            + Add photo
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleAddPhoto(file);
-              }}
-            />
-          </label>
+          <AddPhotoTile pathPrefix="venue/gallery" onAdd={(url) => patch({ gallery: [...venue.gallery, url] })} className="aspect-square" />
         ) : null}
       </div>
       <div>
