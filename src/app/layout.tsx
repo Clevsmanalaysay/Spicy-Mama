@@ -32,10 +32,17 @@ export const metadata: Metadata = {
   },
 };
 
+// Runs before paint so a stored light-mode preference applies immediately
+// instead of flashing dark-then-light. Static inline code, not user input.
+const themeInitScript = `(function(){try{if(localStorage.getItem('spicy-mama-theme')==='light'){document.documentElement.setAttribute('data-theme','light');}}catch(e){}})();`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} h-full`}>
-      <body className="flex min-h-full flex-col bg-ink text-paper antialiased">{children}</body>
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} h-full`} suppressHydrationWarning>
+      <body className="flex min-h-full flex-col bg-ink text-paper antialiased">
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {children}
+      </body>
     </html>
   );
 }

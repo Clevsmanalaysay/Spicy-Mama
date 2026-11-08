@@ -165,6 +165,8 @@ export interface SiteSettings {
   socials: SocialLinks;
   /** Display text for the Instagram teaser on Home, e.g. "@spicymamastudio". */
   instagramHandle: string;
+  /** Manually curated photos for the Instagram teaser grid — not a live feed. */
+  instagramPhotos: string[];
   heroHeadline: string;
   heroTagline: string;
   heroSubtext: string;

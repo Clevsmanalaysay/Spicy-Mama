@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 import { LinkButton } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
@@ -45,22 +46,26 @@ export function Header() {
           })}
         </nav>
 
-        <div className="hidden lg:block">
+        <div className="hidden items-center gap-3 lg:flex">
+          <ThemeToggle className="focus-ring flex size-9 items-center justify-center rounded-full border border-line text-paper-dim transition-colors hover:border-hot hover:text-paper" />
           <LinkButton href="/venue#booking-form" size="md">
             Book the venue
           </LinkButton>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="focus-ring inline-flex items-center justify-center rounded-md p-2 text-paper lg:hidden"
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          aria-label={open ? "Close menu" : "Open menu"}
-        >
-          {open ? <X className="size-6" /> : <Menu className="size-6" />}
-        </button>
+        <div className="flex items-center gap-2 lg:hidden">
+          <ThemeToggle className="focus-ring flex size-9 items-center justify-center rounded-full border border-line text-paper-dim transition-colors hover:border-hot hover:text-paper" />
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="focus-ring inline-flex items-center justify-center rounded-md p-2 text-paper"
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            aria-label={open ? "Close menu" : "Open menu"}
+          >
+            {open ? <X className="size-6" /> : <Menu className="size-6" />}
+          </button>
+        </div>
       </div>
 
       {open ? (

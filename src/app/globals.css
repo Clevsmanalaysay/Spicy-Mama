@@ -32,6 +32,24 @@ html {
   color-scheme: dark;
 }
 
+/*
+ * Light mode: every public-site color comes from the ink/paper pair (ink =
+ * background role, paper = text role, consistently paired as bg-ink+text-paper
+ * or bg-paper+text-ink everywhere in the app) — so swapping just these token
+ * values re-themes the whole site with no component changes. Toggled via
+ * <html data-theme="light">, set by ThemeToggle (see components/layout).
+ */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-ink: #ffffff;
+  --color-ink-soft: #f7f3ec;
+  --color-ink-raised: #f0e9dd;
+  --color-paper: #1a1612;
+  --color-paper-dim: #4a433c;
+  --color-line: #e3d8c7;
+  --color-hot-bright: #a81f44;
+}
+
 body {
   background: var(--color-ink);
   color: var(--color-paper);
