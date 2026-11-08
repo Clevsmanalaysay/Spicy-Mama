@@ -194,7 +194,8 @@ export function EventDetailEditor({ event: initial, slug }: { event: SpicyEvent 
           label={event.title}
           pathPrefix={`events/${event.slug}/cover`}
           onSave={(url) => patch({ coverUrl: url })}
-          className="aspect-video w-full rounded-xl border border-line"
+          fit="contain"
+          className="aspect-video w-full rounded-xl border border-line bg-ink-soft"
         />
       </Section>
 
