@@ -32,9 +32,11 @@ export function PlaceholderMedia({
     // — no forced box, no bars — for the few spots (e.g. an event's header
     // photo) that should show the upload exactly as-is.
     if (!fill) {
+      // Scale to the image's own aspect ratio (no crop, no letterbox bars),
+      // but cap height so a tall portrait upload doesn't run off the screen.
       // next/image requires width+height without fill, which we don't know for an arbitrary upload.
       // eslint-disable-next-line @next/next/no-img-element
-      return <img src={src} alt={alt} className={cn("h-auto w-full", className)} />;
+      return <img src={src} alt={alt} className={cn("mx-auto block h-auto max-h-[80vh] w-auto max-w-full", className)} />;
     }
     return (
       <div className={cn("relative overflow-hidden", className)}>

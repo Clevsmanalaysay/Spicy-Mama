@@ -46,7 +46,7 @@ export function EventHeaderMedia({
     const url = linkValue.trim();
     if (!url) return;
     if (!toEmbedUrl(url)) {
-      setLinkError("That doesn't look like a YouTube or Vimeo link.");
+      setLinkError("That doesn't look like a YouTube, Vimeo or Instagram link.");
       return;
     }
     setLinkError("");
@@ -95,17 +95,17 @@ export function EventHeaderMedia({
               src={current.url}
               alt={event.title}
               fill={false}
-              className="w-full overflow-hidden rounded-xl border border-line"
+              className="overflow-hidden rounded-xl border border-line"
             />
           ) : (
             <>
               <button
                 type="button"
                 onClick={() => setLightboxOpen(true)}
-                className="focus-ring block w-full overflow-hidden rounded-xl border border-line"
+                className="focus-ring block w-full"
                 aria-label={`Expand ${event.title} photo`}
               >
-                <PlaceholderMedia src={current.url} alt={event.title} fill={false} className="w-full" />
+                <PlaceholderMedia src={current.url} alt={event.title} fill={false} className="overflow-hidden rounded-xl border border-line" />
               </button>
               {lightboxOpen ? <Lightbox src={current.url} alt={event.title} onClose={() => setLightboxOpen(false)} /> : null}
             </>
@@ -121,7 +121,12 @@ export function EventHeaderMedia({
             />
           </div>
         ) : (
-          <video src={current.url} controls playsInline className="h-auto w-full rounded-xl border border-line" />
+          <video
+            src={current.url}
+            controls
+            playsInline
+            className="mx-auto block h-auto max-h-[80vh] w-auto max-w-full rounded-xl border border-line"
+          />
         )}
       </div>
 
@@ -176,7 +181,7 @@ function HeaderMediaControls({
               onAddLink();
             }
           }}
-          placeholder="Or paste a YouTube/Vimeo link"
+          placeholder="Or paste a YouTube, Vimeo or Instagram link"
           className="focus-ring h-12 min-w-0 flex-1 rounded-lg border border-line bg-ink px-3 text-sm text-paper placeholder:text-paper-dim"
         />
         <button

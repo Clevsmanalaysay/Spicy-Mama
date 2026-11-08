@@ -1,4 +1,4 @@
-/** Turns a YouTube/Vimeo watch link into its embeddable iframe URL, or null if it's not one (e.g. a direct video file link/upload — play that with a <video> tag instead). */
+/** Turns a YouTube/Vimeo/Instagram link into its embeddable iframe URL, or null if it's not one (e.g. a direct video file link/upload — play that with a <video> tag instead). */
 export function toEmbedUrl(url: string): string | null {
   try {
     const u = new URL(url);
@@ -13,6 +13,10 @@ export function toEmbedUrl(url: string): string | null {
     if (u.hostname.includes("vimeo.com")) {
       const id = u.pathname.replace("/", "");
       return id ? `https://player.vimeo.com/video/${id}?autoplay=1` : null;
+    }
+    if (u.hostname.includes("instagram.com")) {
+      const match = u.pathname.match(/^\/(p|reel|tv)\/([^/]+)/);
+      return match ? `https://www.instagram.com/${match[1]}/${match[2]}/embed` : null;
     }
     return null;
   } catch {
