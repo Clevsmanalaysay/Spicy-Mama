@@ -181,19 +181,27 @@ export async function getPress(): Promise<PressMention[]> {
 }
 
 export async function getVenueContent(): Promise<VenueContent> {
+  // Staff edit this doc field-by-field (setDoc+merge from whichever section
+  // they touch — see TheSpace.tsx/Packages.tsx), so the live document can be
+  // missing fields no one has edited yet. Merge over the seed default rather
+  // than returning the live doc as-is, or a missing array field (amenities,
+  // packages, ...) crashes every .map/.filter call on it.
   const result = await safeDoc(async () => {
     const db = getDb()!;
     const snap = await getDoc(doc(db, "venue", "content"));
-    return snap.exists() ? (snap.data() as VenueContent) : null;
-  }, seedVenue);
-  return result ?? seedVenue;
+    return snap.exists() ? (snap.data() as Partial<VenueContent>) : null;
+  }, null);
+  return result ? { ...seedVenue, ...result } : seedVenue;
 }
 
 export async function getSiteSettings(): Promise<SiteSettings> {
+  // Same reasoning as getVenueContent — this doc is patched field-by-field
+  // from several different components (Hero, ContactInfo, ...), so merge
+  // over the seed default instead of trusting the live doc to be complete.
   const result = await safeDoc(async () => {
     const db = getDb()!;
     const snap = await getDoc(doc(db, "siteSettings", "global"));
-    return snap.exists() ? (snap.data() as SiteSettings) : null;
-  }, seedSiteSettings);
-  return result ?? seedSiteSettings;
+    return snap.exists() ? (snap.data() as Partial<SiteSettings>) : null;
+  }, null);
+  return result ? { ...seedSiteSettings, ...result } : seedSiteSettings;
 }
