@@ -32,8 +32,22 @@ export default async function HomePage() {
   // getProjects() already sorts by.
   const featuredProjects = projects.filter((p) => p.featuredOnHome);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: "Spicy Mama Creative Studio",
+    description: settings.heroTagline || settings.heroSubtext,
+    url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://spicymamastudio.com",
+    telephone: settings.phone || undefined,
+    email: settings.contactEmail || undefined,
+    image: settings.heroMedia || undefined,
+    address: settings.address ? { "@type": "PostalAddress", streetAddress: settings.address } : undefined,
+    sameAs: Object.values(settings.socials).filter(Boolean),
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Hero settings={settings} />
       <FeaturedWork projects={featuredProjects} settings={settings} />
       <WhatWeDo settings={settings} />

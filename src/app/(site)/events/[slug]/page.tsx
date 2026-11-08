@@ -12,13 +12,19 @@ type Params = Promise<{ slug: string }>;
 // snapshot, or edits (and new drafts) would never show up.
 export const dynamic = "force-dynamic";
 
+function eventShareImage(event: { headerMedia?: { type: string; url: string }[]; coverUrl?: string }): string | undefined {
+  return event.headerMedia?.find((m) => m.type === "image")?.url ?? event.coverUrl;
+}
+
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
   const event = await getEventBySlug(slug);
   if (!event) return {};
+  const image = eventShareImage(event);
   return {
     title: event.title,
     description: event.summary,
+    openGraph: image ? { images: [image] } : undefined,
     robots: event.status === "draft" || !event.isPublic ? { index: false, follow: false } : undefined,
   };
 }
@@ -34,6 +40,7 @@ export default async function EventDetailPage({ params }: { params: Params }) {
   }
 
   const isVisible = event.status === "published" && event.isPublic;
+  const image = eventShareImage(event);
 
   const jsonLd = isVisible
     ? {
@@ -42,7 +49,16 @@ export default async function EventDetailPage({ params }: { params: Params }) {
         name: event.title,
         startDate: event.date,
         description: event.summary,
-        location: { "@type": "Place", name: "Spicy Mama Creative Studio" },
+        image: image || undefined,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://spicymamastudio.com"}/events/${event.slug}`,
+        eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+        eventStatus: "https://schema.org/EventScheduled",
+        location: {
+          "@type": "Place",
+          name: "Spicy Mama Creative Studio",
+          address: settings.address ? { "@type": "PostalAddress", streetAddress: settings.address } : undefined,
+        },
+        organizer: { "@type": "Organization", name: "Spicy Mama Creative Studio" },
       }
     : null;
 

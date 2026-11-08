@@ -5,6 +5,7 @@ import { LinkButton } from "@/components/ui/Button";
 import { ProjectCard } from "@/components/work/ProjectCard";
 import { ProjectDetailEditor } from "@/components/work/ProjectDetailEditor";
 import { getProjectBySlug, getProjects, getSiteSettings } from "@/lib/content";
+import { toEmbedUrl } from "@/lib/video-embed";
 
 type Params = Promise<{ slug: string }>;
 
@@ -41,18 +42,39 @@ export default async function ProjectDetailPage({ params }: { params: Params }) 
   const [allProjects, settings] = await Promise.all([getProjects(), getSiteSettings()]);
   const related = allProjects.filter((p) => p.id !== project.id).slice(0, 3);
 
+  const image = project.shareImage || project.posterUrl;
+  const pageUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://spicymamastudio.com"}/work/${project.slug}`;
+  const embedUrl = project.trailerUrl ? toEmbedUrl(project.trailerUrl) : null;
+  const trailerVideoObject = embedUrl
+    ? {
+        "@type": "VideoObject",
+        name: `${project.title} trailer`,
+        description: project.logline,
+        thumbnailUrl: image,
+        embedUrl,
+        uploadDate: `${project.year}-01-01`,
+      }
+    : null;
+
   const jsonLd =
-    project.type === "film" && project.status === "published"
-      ? {
-          "@context": "https://schema.org",
-          "@type": "Movie",
-          name: project.title,
-          description: project.logline,
-          datePublished: String(project.year),
-          genre: project.genre,
-          director: project.credits.find((c) => /director/i.test(c.role))?.name,
-        }
-      : null;
+    project.status !== "published"
+      ? null
+      : project.type === "film"
+        ? {
+            "@context": "https://schema.org",
+            "@type": "Movie",
+            name: project.title,
+            description: project.logline,
+            datePublished: String(project.year),
+            genre: project.genre,
+            image,
+            url: pageUrl,
+            director: project.credits.find((c) => /director/i.test(c.role))?.name,
+            trailer: trailerVideoObject ?? undefined,
+          }
+        : trailerVideoObject
+          ? { "@context": "https://schema.org", ...trailerVideoObject, url: pageUrl }
+          : null;
 
   return (
     <>
