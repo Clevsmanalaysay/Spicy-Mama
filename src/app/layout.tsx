@@ -30,6 +30,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
   },
+  verification: {
+    google: "FUumLLgz4YkSffHF9XtivZXgqNZR5p3gABAelT283k4",
+  },
 };
 
 // Runs before paint so a stored light-mode preference applies immediately
