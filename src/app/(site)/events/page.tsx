@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { PageHero } from "@/components/ui/PageHero";
+import { EditablePageHero } from "@/components/ui/EditablePageHero";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { EventCard } from "@/components/events/EventCard";
 import { NewEventTile } from "@/components/events/NewEventTile";
 import { LinkButton } from "@/components/ui/Button";
-import { getEvents } from "@/lib/content";
+import { getEvents, getSiteSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Events",
@@ -16,18 +16,14 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function EventsPage() {
-  const events = await getEvents();
+  const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
   const today = new Date(new Date().toDateString());
   const upcoming = events.filter((e) => new Date(e.date) >= today).sort((a, b) => a.date.localeCompare(b.date));
   const past = events.filter((e) => new Date(e.date) < today).sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <>
-      <PageHero
-        eyebrow="Events"
-        title="Social proof, and a reason to follow."
-        description="Public screenings, workshops and pop-ups at the venue — plus recaps from what's already happened."
-      />
+      <EditablePageHero page="events" settings={settings} />
 
       <Section tone="dark">
         <SectionHeading eyebrow="Upcoming" title="What's on" />

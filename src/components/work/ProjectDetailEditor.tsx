@@ -136,6 +136,15 @@ export function ProjectDetailEditor({ project: initial, slug }: { project: Proje
                 className="focus-ring w-16 rounded border border-line bg-ink px-2 py-1 text-paper"
               />
             </label>
+            <label className="flex items-center gap-2 text-xs font-semibold text-paper">
+              <input
+                type="checkbox"
+                checked={project.featuredOnHome}
+                onChange={(e) => patch({ featuredOnHome: e.target.checked })}
+                className="size-4 accent-[var(--color-hot)]"
+              />
+              Feature on homepage
+            </label>
             {canPublish ? (
               <button
                 type="button"

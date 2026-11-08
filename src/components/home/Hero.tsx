@@ -41,10 +41,13 @@ export function Hero({ settings: initial }: { settings: SiteSettings }) {
           multiline
           className="mt-4 max-w-3xl font-display text-4xl font-bold leading-[1.05] sm:text-6xl"
         />
-        <p className="mt-5 max-w-xl text-base text-paper-dim sm:text-lg">
-          Film production, brand collaborations and music videos by day. A creative studio that
-          opens its doors for parties, launches and shoots by night.
-        </p>
+        <EditableText
+          value={settings.heroSubtext}
+          onSave={(v) => patch({ heroSubtext: v })}
+          as="p"
+          multiline
+          className="mt-5 block max-w-xl text-base text-paper-dim sm:text-lg"
+        />
         <div className="mt-8 flex flex-wrap gap-4">
           <LinkButton href="/contact?type=Production" size="lg">
             Work with us

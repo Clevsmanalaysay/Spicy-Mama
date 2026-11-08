@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PageHero } from "@/components/ui/PageHero";
+import { EditablePageHero } from "@/components/ui/EditablePageHero";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { EventTypesList } from "@/components/venue/EventTypesList";
 import { TheSpace } from "@/components/venue/TheSpace";
@@ -10,7 +10,7 @@ import { BookingForm } from "@/components/forms/BookingForm";
 import { LinkButton } from "@/components/ui/Button";
 import { PlaceholderMedia } from "@/components/ui/PlaceholderMedia";
 import { formatDate } from "@/lib/utils";
-import { getEvents, getVenueContent } from "@/lib/content";
+import { getEvents, getSiteSettings, getVenueContent } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Venue & Bookings",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function VenuePage() {
-  const [venue, events] = await Promise.all([getVenueContent(), getEvents()]);
+  const [venue, events, settings] = await Promise.all([getVenueContent(), getEvents(), getSiteSettings()]);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -40,11 +40,7 @@ export default async function VenuePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <PageHero
-        eyebrow="Venue & Bookings"
-        title="A creative studio by day. Your party by night."
-        description="Our house is your stage — book the same space that builds campaigns and shoots films for your next birthday, launch, screening or shoot."
-      >
+      <EditablePageHero page="venue" settings={settings}>
         <div className="mt-8 flex flex-wrap gap-4">
           <LinkButton href="#booking-form" size="lg">
             Book the venue
@@ -53,7 +49,7 @@ export default async function VenuePage() {
             House rules
           </LinkButton>
         </div>
-      </PageHero>
+      </EditablePageHero>
 
       <Section tone="dark">
         <SectionHeading eyebrow="What happens here" title="Built for every kind of gathering." />

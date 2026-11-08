@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { PageHero } from "@/components/ui/PageHero";
+import { EditablePageHero } from "@/components/ui/EditablePageHero";
 import { Section } from "@/components/ui/Section";
 import { PortfolioGrid } from "@/components/work/PortfolioGrid";
-import { getProjects } from "@/lib/content";
+import { getProjects, getSiteSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Work",
@@ -14,15 +14,11 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function WorkPage() {
-  const projects = await getProjects();
+  const [projects, settings] = await Promise.all([getProjects(), getSiteSettings()]);
 
   return (
     <>
-      <PageHero
-        eyebrow="Portfolio"
-        title="The proof is in the work."
-        description="Films, brand collaborations, music videos and events — filter by type or scroll through everything we've made."
-      />
+      <EditablePageHero page="work" settings={settings} />
       <Section tone="dark">
         <PortfolioGrid projects={projects} />
       </Section>

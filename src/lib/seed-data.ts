@@ -545,9 +545,68 @@ export const seedSiteSettings: SiteSettings = {
   socials: {
     instagram: "https://www.instagram.com/spicymamastudio/",
   },
+  instagramHandle: "@spicymamastudio",
   heroHeadline: "We make films. We throw parties. Both get noticed.",
   heroTagline: "Stories with heat.",
+  heroSubtext:
+    "Film production, brand collaborations and music videos by day. A creative studio that opens its doors for parties, launches and shoots by night.",
   heroMedia: undefined,
+  whatWeDoTiles: [
+    {
+      icon: "film",
+      title: "Film & Video Production",
+      description: "Narrative features, short films and music videos — brief to delivery.",
+      href: "/studio",
+    },
+    {
+      icon: "megaphone",
+      title: "Brand Collaborations",
+      description: "Branded content and campaigns for brands that want a filmmaker's eye.",
+      href: "/studio",
+    },
+    {
+      icon: "party",
+      title: "Venue & Events",
+      description: "Our house, your stage — parties, launches, screenings and shoots.",
+      href: "/venue",
+    },
+  ],
+  closingCtaHeading: "Got a story? Let's make it spicy.",
+  pageHero: {
+    studio: {
+      eyebrow: "Studio & Services",
+      title: "We're a partner, not a vendor.",
+      description:
+        "Spicy Mama Creative Studio is a film and content production house — we co-create, build with you, from idea to screen. Below is where we help and how we work.",
+    },
+    about: {
+      eyebrow: "About",
+      title: "A studio built to make noise — on screen and in the room.",
+      description:
+        "Spicy Mama Creative Studio started as a production outfit and grew into a venue, because the people making the work wanted somewhere to show it off. We make films, brand content and music videos, and open our doors for parties, launches and shoots.",
+    },
+    venue: {
+      eyebrow: "Venue & Bookings",
+      title: "A creative studio by day. Your party by night.",
+      description:
+        "Our house is your stage — book the same space that builds campaigns and shoots films for your next birthday, launch, screening or shoot.",
+    },
+    contact: {
+      eyebrow: "Contact",
+      title: "Got a story? Let's make it spicy.",
+      description: "Production inquiries, brand collaborations, press or anything else — tell us about it below.",
+    },
+    events: {
+      eyebrow: "Events",
+      title: "Social proof, and a reason to follow.",
+      description: "Public screenings, workshops and pop-ups at the venue — plus recaps from what's already happened.",
+    },
+    work: {
+      eyebrow: "Portfolio",
+      title: "The proof is in the work.",
+      description: "Films, brand collaborations, music videos and events — filter by type or scroll through everything we've made.",
+    },
+  },
 };
 
 export const eventTypeOptions = [

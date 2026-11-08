@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { PageHero } from "@/components/ui/PageHero";
+import { EditablePageHero } from "@/components/ui/EditablePageHero";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { SparkleBullet } from "@/components/ui/SparkleDivider";
 import { TeamGrid } from "@/components/about/TeamGrid";
 import { PressMentions } from "@/components/about/PressMentions";
-import { getPress, getTeam } from "@/lib/content";
+import { getPress, getSiteSettings, getTeam } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "About",
@@ -23,15 +23,11 @@ const values = [
 ];
 
 export default async function AboutPage() {
-  const [team, press] = await Promise.all([getTeam(), getPress()]);
+  const [team, press, settings] = await Promise.all([getTeam(), getPress(), getSiteSettings()]);
 
   return (
     <>
-      <PageHero
-        eyebrow="About"
-        title="A studio built to make noise — on screen and in the room."
-        description="Spicy Mama Creative Studio started as a production outfit and grew into a venue, because the people making the work wanted somewhere to show it off. We make films, brand content and music videos, and open our doors for parties, launches and shoots."
-      />
+      <EditablePageHero page="about" settings={settings} />
 
       <Section tone="dark">
         <SectionHeading eyebrow="How we work" title="Values" />

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PageHero } from "@/components/ui/PageHero";
+import { EditablePageHero } from "@/components/ui/EditablePageHero";
 import { Section } from "@/components/ui/Section";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { ContactInfo } from "@/components/contact/ContactInfo";
@@ -23,11 +23,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Sear
 
   return (
     <>
-      <PageHero
-        eyebrow="Contact"
-        title="Got a story? Let's make it spicy."
-        description="Production inquiries, brand collaborations, press or anything else — tell us about it below."
-      />
+      <EditablePageHero page="contact" settings={settings} />
 
       <Section tone="dark">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">

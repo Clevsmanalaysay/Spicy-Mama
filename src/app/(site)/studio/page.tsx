@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { PageHero } from "@/components/ui/PageHero";
+import { EditablePageHero } from "@/components/ui/EditablePageHero";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { LinkButton } from "@/components/ui/Button";
 import { ServiceBlocks } from "@/components/studio/ServiceBlocks";
 import { HowWeWork } from "@/components/studio/HowWeWork";
 import { Faq } from "@/components/ui/Faq";
-import { getFaq, getProjects, getServices } from "@/lib/content";
+import { getFaq, getProjects, getServices, getSiteSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Studio & Services",
@@ -18,15 +18,16 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function StudioPage() {
-  const [services, faq, projects] = await Promise.all([getServices(), getFaq(), getProjects()]);
+  const [services, faq, projects, settings] = await Promise.all([
+    getServices(),
+    getFaq(),
+    getProjects(),
+    getSiteSettings(),
+  ]);
 
   return (
     <>
-      <PageHero
-        eyebrow="Studio & Services"
-        title="We're a partner, not a vendor."
-        description="Spicy Mama Creative Studio is a film and content production house — we co-create, build with you, from idea to screen. Below is where we help and how we work."
-      />
+      <EditablePageHero page="studio" settings={settings} />
 
       <Section tone="dark">
         <ServiceBlocks services={services} projects={projects} />

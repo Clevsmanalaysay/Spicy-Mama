@@ -19,26 +19,29 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  // Top 10 projects, already grouped Films → Music Videos → Collaborations,
-  // newest first, by getProjects()'s ordering.
-  const [settings, featuredProjects, collaborators, venue, events] = await Promise.all([
+  const [settings, projects, collaborators, venue, events] = await Promise.all([
     getSiteSettings(),
-    getProjects({ limit: 10 }),
+    getProjects(),
     getCollaborators(),
     getVenueContent(),
     getEvents(),
   ]);
 
+  // Only staff-selected projects ("Feature on homepage" on a project's page),
+  // in the same Films → Music Videos → Collaborations / newest-first order
+  // getProjects() already sorts by.
+  const featuredProjects = projects.filter((p) => p.featuredOnHome);
+
   return (
     <>
       <Hero settings={settings} />
       <FeaturedWork projects={featuredProjects} />
-      <WhatWeDo />
+      <WhatWeDo settings={settings} />
       <CollaboratorsStrip collaborators={collaborators} />
       <VenueTeaser venue={venue} />
       <LatestEvents events={events} />
       <InstagramTeaser settings={settings} />
-      <ClosingCta />
+      <ClosingCta settings={settings} />
     </>
   );
 }

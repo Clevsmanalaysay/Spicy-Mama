@@ -138,6 +138,22 @@ export interface SocialLinks {
   youtube?: string;
 }
 
+export interface PageHeroContent {
+  eyebrow: string;
+  title: string;
+  description: string;
+}
+
+/** Keys match the icon options in lib/icon-options.ts. */
+export type WhatWeDoIconKey = "film" | "megaphone" | "party" | "camera" | "music" | "sparkle";
+
+export interface WhatWeDoTile {
+  icon: WhatWeDoIconKey;
+  title: string;
+  description: string;
+  href: string;
+}
+
 export interface SiteSettings {
   contactEmail: string;
   notifyEmail: string;
@@ -147,9 +163,22 @@ export interface SiteSettings {
   /** Google Maps link the address links out to (a regular share URL, not an embed src). */
   mapUrl?: string;
   socials: SocialLinks;
+  /** Display text for the Instagram teaser on Home, e.g. "@spicymamastudio". */
+  instagramHandle: string;
   heroHeadline: string;
   heroTagline: string;
+  heroSubtext: string;
   heroMedia?: string;
+  whatWeDoTiles: WhatWeDoTile[];
+  closingCtaHeading: string;
+  pageHero: {
+    studio: PageHeroContent;
+    about: PageHeroContent;
+    venue: PageHeroContent;
+    contact: PageHeroContent;
+    events: PageHeroContent;
+    work: PageHeroContent;
+  };
 }
 
 export type BookingStatus = "new" | "held" | "confirmed" | "declined";
