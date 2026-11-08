@@ -9,12 +9,13 @@ import { EditableImage } from "@/components/edit/EditableImage";
 import { EditableText } from "@/components/edit/EditableText";
 import { AddPhotoTile } from "@/components/edit/AddPhotoTile";
 import { AddVideoTile } from "@/components/edit/AddVideoTile";
+import { EventHeaderMedia } from "@/components/events/EventHeaderMedia";
 import { useEditMode } from "@/lib/edit-mode";
 import { deleteEvent, getEventBySlugAsStaff, patchEvent } from "@/lib/admin-data";
 import { eventTypeOptions } from "@/lib/seed-data";
 import { formatDate } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import type { SpicyEvent } from "@/lib/types";
+import type { HeaderMediaItem, SpicyEvent } from "@/lib/types";
 
 export function EventDetailEditor({ event: initial, slug }: { event: SpicyEvent | null; slug?: string }) {
   const router = useRouter();
@@ -95,6 +96,14 @@ export function EventDetailEditor({ event: initial, slug }: { event: SpicyEvent 
     if (!confirm(`Delete "${currentEvent.title}"? This can't be undone.`)) return;
     await deleteEvent(currentEvent.id);
     router.push("/events");
+  }
+
+  function patchHeaderMedia(headerMedia: HeaderMediaItem[]) {
+    // Keep coverUrl (used for thumbnails on event cards) pointed at the
+    // first photo in the header gallery, so cards don't go blank once an
+    // event uses headerMedia instead of the old single coverUrl field.
+    const firstImage = headerMedia.find((m) => m.type === "image")?.url;
+    return patch({ headerMedia, coverUrl: firstImage ?? currentEvent.coverUrl });
   }
 
   return (
@@ -185,16 +194,7 @@ export function EventDetailEditor({ event: initial, slug }: { event: SpicyEvent 
       </Section>
 
       <Section tone="dark" className="pt-0">
-        <EditableImage
-          src={event.coverUrl}
-          alt={event.title}
-          label={event.title}
-          pathPrefix={`events/${event.slug}/cover`}
-          onSave={(url) => patch({ coverUrl: url })}
-          fit="contain"
-          fill={!!event.coverUrl}
-          className={event.coverUrl ? "w-full overflow-hidden rounded-xl border border-line" : "aspect-video w-full rounded-xl border border-line bg-ink-soft"}
-        />
+        <EventHeaderMedia event={currentEvent} editMode={editMode} onChange={patchHeaderMedia} />
       </Section>
 
       {editMode || event.description ? (

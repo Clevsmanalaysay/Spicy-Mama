@@ -50,6 +50,11 @@ export interface Project {
   shareImage?: string;
 }
 
+export interface HeaderMediaItem {
+  type: "image" | "video";
+  url: string;
+}
+
 export interface SpicyEvent {
   id: string;
   slug: string;
@@ -59,6 +64,7 @@ export interface SpicyEvent {
   summary: string;
   description?: string;
   coverUrl?: string;
+  headerMedia?: HeaderMediaItem[];
   photos: string[];
   videos: string[];
   hostConsent: boolean;
