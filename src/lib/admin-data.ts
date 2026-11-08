@@ -15,7 +15,9 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { getDb } from "./firebase";
+import { deleteApp, initializeApp } from "firebase/app";
+import { createUserWithEmailAndPassword, getAuth, sendPasswordResetEmail, signOut } from "firebase/auth";
+import { firebaseConfig, getDb } from "./firebase";
 import type {
   BookingRequest,
   BookingStatus,
@@ -222,13 +224,13 @@ export async function patchEvent(id: string, data: Partial<Omit<SpicyEvent, "id"
  * tile on the live Events page. Returns the slug (not the doc id) since
  * that's what the public route needs to navigate straight to it.
  */
-export async function createDraftEvent(): Promise<string> {
+export async function createDraftEvent(defaultDate?: string): Promise<string> {
   const db = requireDb();
   const slug = `untitled-${Date.now()}`;
   await addDoc(collection(db, "events"), {
     slug,
     title: "Untitled event",
-    date: new Date().toISOString().slice(0, 10),
+    date: defaultDate ?? new Date().toISOString().slice(0, 10),
     type: "Other",
     summary: "",
     photos: [],
@@ -325,15 +327,39 @@ export async function listUsersAdmin(): Promise<StaffUser[]> {
 }
 
 /**
- * Creates/updates the Firestore role profile for a staff member. This does
- * NOT create the Firebase Auth account itself — Auth user creation needs
- * the Admin SDK (a Cloud Function), which is out of scope for the client
- * app. Create the Auth user in the Firebase console first, then use this to
- * grant them a role by uid.
+ * Creates/updates the Firestore role profile for a staff member, by uid, for
+ * an Auth account that already exists. Prefer inviteStaffUser below, which
+ * creates that account too — this is here for the Firebase-console-created
+ * case (or correcting an existing profile).
  */
 export async function upsertStaffProfile(uid: string, data: { name: string; email: string; role: StaffRole }) {
   const db = requireDb();
   await setDoc(doc(db, "users", uid), data, { merge: true });
+}
+
+/**
+ * Invites a new staff member by email — no Firebase Console step, no UID to
+ * copy. Creates their Firebase Auth account and grants the chosen role
+ * directly, then emails them a link (via Firebase Auth's own free email
+ * delivery) to set their password and sign in.
+ *
+ * The account is created on a throwaway secondary Firebase App instance,
+ * not the app's shared one: createUserWithEmailAndPassword auto-signs-in as
+ * whichever account it just created, which would otherwise boot the admin
+ * out of their own session the moment they invited someone.
+ */
+export async function inviteStaffUser(name: string, email: string, role: StaffRole) {
+  const secondaryApp = initializeApp(firebaseConfig, `invite-${Date.now()}`);
+  const secondaryAuth = getAuth(secondaryApp);
+  try {
+    const tempPassword = crypto.randomUUID();
+    const credential = await createUserWithEmailAndPassword(secondaryAuth, email, tempPassword);
+    await sendPasswordResetEmail(secondaryAuth, email);
+    await upsertStaffProfile(credential.user.uid, { name, email, role });
+  } finally {
+    await signOut(secondaryAuth).catch(() => {});
+    await deleteApp(secondaryApp).catch(() => {});
+  }
 }
 
 /** Approves a pending self-signup request by granting it a real role. */

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { EditablePageHero } from "@/components/ui/EditablePageHero";
-import { Section, SectionHeading } from "@/components/ui/Section";
+import { Section } from "@/components/ui/Section";
+import { EditableSectionHeading } from "@/components/ui/EditableSectionHeading";
 import { EventTypesList } from "@/components/venue/EventTypesList";
 import { TheSpace } from "@/components/venue/TheSpace";
 import { Packages } from "@/components/venue/Packages";
@@ -52,7 +53,12 @@ export default async function VenuePage() {
       </EditablePageHero>
 
       <Section tone="dark">
-        <SectionHeading eyebrow="What happens here" title="Built for every kind of gathering." />
+        <EditableSectionHeading
+          settings={settings}
+          sectionKey="venue.whatHappensHere"
+          defaultEyebrow="What happens here"
+          defaultTitle="Built for every kind of gathering."
+        />
         <div className="mt-8">
           <EventTypesList />
         </div>
@@ -76,7 +82,7 @@ export default async function VenuePage() {
       {events.length ? (
         <Section tone="dark">
           <div className="flex flex-wrap items-end justify-between gap-6">
-            <SectionHeading eyebrow="Seen it live" title="Past events here" />
+            <EditableSectionHeading settings={settings} sectionKey="venue.pastEvents" defaultEyebrow="Seen it live" defaultTitle="Past events here" />
             <LinkButton href="/events" variant="secondary">
               All events
             </LinkButton>
@@ -100,7 +106,13 @@ export default async function VenuePage() {
       ) : null}
 
       <Section tone="light" id="booking-form">
-        <SectionHeading tone="light" eyebrow="Book the venue" title="Tell us about your event" />
+        <EditableSectionHeading
+          settings={settings}
+          sectionKey="venue.bookingForm"
+          defaultEyebrow="Book the venue"
+          defaultTitle="Tell us about your event"
+          tone="light"
+        />
         <div className="mt-8 max-w-2xl">
           <BookingForm heldDates={venue.heldDates} />
         </div>

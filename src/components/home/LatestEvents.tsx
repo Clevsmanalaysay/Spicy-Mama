@@ -1,16 +1,17 @@
 import Link from "next/link";
-import { Section, SectionHeading } from "@/components/ui/Section";
+import { Section } from "@/components/ui/Section";
+import { EditableSectionHeading } from "@/components/ui/EditableSectionHeading";
 import { LinkButton } from "@/components/ui/Button";
 import { PlaceholderMedia } from "@/components/ui/PlaceholderMedia";
 import { formatDate } from "@/lib/utils";
-import type { SpicyEvent } from "@/lib/types";
+import type { SiteSettings, SpicyEvent } from "@/lib/types";
 
-export function LatestEvents({ events }: { events: SpicyEvent[] }) {
+export function LatestEvents({ events, settings }: { events: SpicyEvent[]; settings: SiteSettings }) {
   if (!events.length) return null;
   return (
     <Section tone="dark">
       <div className="flex flex-wrap items-end justify-between gap-6">
-        <SectionHeading eyebrow="Latest at the venue" title="Recent events." />
+        <EditableSectionHeading settings={settings} sectionKey="home.latestEvents" defaultEyebrow="Latest at the venue" defaultTitle="Recent events." />
         <LinkButton href="/events" variant="secondary">
           See all events
         </LinkButton>

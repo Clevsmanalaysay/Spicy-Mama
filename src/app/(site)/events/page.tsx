@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { EditablePageHero } from "@/components/ui/EditablePageHero";
-import { Section, SectionHeading } from "@/components/ui/Section";
+import { Section } from "@/components/ui/Section";
+import { EditableSectionHeading } from "@/components/ui/EditableSectionHeading";
 import { EventCard } from "@/components/events/EventCard";
 import { NewEventTile } from "@/components/events/NewEventTile";
 import { LinkButton } from "@/components/ui/Button";
@@ -18,6 +19,7 @@ export const dynamic = "force-dynamic";
 export default async function EventsPage() {
   const [events, settings] = await Promise.all([getEvents(), getSiteSettings()]);
   const today = new Date(new Date().toDateString());
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const upcoming = events.filter((e) => new Date(e.date) >= today).sort((a, b) => a.date.localeCompare(b.date));
   const past = events.filter((e) => new Date(e.date) < today).sort((a, b) => b.date.localeCompare(a.date));
 
@@ -26,7 +28,7 @@ export default async function EventsPage() {
       <EditablePageHero page="events" settings={settings} />
 
       <Section tone="dark">
-        <SectionHeading eyebrow="Upcoming" title="What's on" />
+        <EditableSectionHeading settings={settings} sectionKey="events.upcoming" defaultEyebrow="Upcoming" defaultTitle="What's on" />
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {upcoming.map((event, i) => (
             <EventCard key={event.id} event={event} index={i} />
@@ -39,16 +41,16 @@ export default async function EventsPage() {
       </Section>
 
       <Section tone="raised">
-        <SectionHeading eyebrow="Recaps" title="Past events" />
-        {past.length ? (
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {past.map((event, i) => (
-              <EventCard key={event.id} event={event} index={i + 3} />
-            ))}
-          </div>
-        ) : (
+        <EditableSectionHeading settings={settings} sectionKey="events.recaps" defaultEyebrow="Recaps" defaultTitle="Past events" />
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {past.map((event, i) => (
+            <EventCard key={event.id} event={event} index={i + 3} />
+          ))}
+          <NewEventTile defaultDate={yesterday} label="Add past event" />
+        </div>
+        {!past.length ? (
           <p className="mt-6 text-paper-dim">Recaps are published within a week of each event — check back soon.</p>
-        )}
+        ) : null}
       </Section>
 
       <Section tone="dark" className="text-center">

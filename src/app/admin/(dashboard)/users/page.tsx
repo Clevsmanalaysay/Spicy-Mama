@@ -4,14 +4,15 @@ import { useEffect, useState } from "react";
 import { Trash2, Check, X, Clock } from "lucide-react";
 import { Field, TextInput, Select } from "@/components/forms/fields";
 import { Button } from "@/components/ui/Button";
-import { approveStaffUser, listUsersAdmin, removeStaffProfile, upsertStaffProfile } from "@/lib/admin-data";
+import { approveStaffUser, inviteStaffUser, listUsersAdmin, removeStaffProfile } from "@/lib/admin-data";
 import type { StaffRole, StaffUser } from "@/lib/types";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<StaffUser[] | null>(null);
-  const [form, setForm] = useState({ uid: "", name: "", email: "", role: "editor" as StaffRole });
+  const [form, setForm] = useState({ name: "", email: "", role: "editor" as StaffRole });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [invited, setInvited] = useState("");
   const [approvingRole, setApprovingRole] = useState<Record<string, StaffRole>>({});
 
   function refresh() {
@@ -25,16 +26,19 @@ export default function AdminUsersPage() {
   const pending = users?.filter((u) => u.role === "pending") ?? [];
   const staff = users?.filter((u) => u.role === "admin" || u.role === "editor") ?? [];
 
-  async function handleAdd(e: React.FormEvent) {
+  async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.uid || !form.name || !form.email) return;
+    if (!form.name || !form.email) return;
     setSaving(true);
+    setError("");
+    setInvited("");
     try {
-      await upsertStaffProfile(form.uid, { name: form.name, email: form.email, role: form.role });
-      setForm({ uid: "", name: "", email: "", role: "editor" });
+      await inviteStaffUser(form.name, form.email, form.role);
+      setInvited(form.email);
+      setForm({ name: "", email: "", role: "editor" });
       refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't save — try again.");
+      setError(err instanceof Error ? err.message : "Couldn't send the invite — try again.");
     } finally {
       setSaving(false);
     }
@@ -61,11 +65,17 @@ export default function AdminUsersPage() {
     <div className="max-w-3xl">
       <h1 className="font-display text-3xl font-bold">Staff users</h1>
       <p className="mt-1 text-ink/60">
-        People can request access at <code className="text-hot-deep">/admin/signup</code> — approve or deny them
-        below. You can also grant access directly if you already created their sign-in in the Firebase console.
+        Invite someone by email below — no Firebase console steps needed. They&apos;ll get an email to set their
+        password and sign in. People can also request access themselves at{" "}
+        <code className="text-hot-deep">/admin/signup</code>, which you approve or deny below.
       </p>
 
       {error ? <p className="mt-4 text-sm font-semibold text-hot-deep">{error}</p> : null}
+      {invited ? (
+        <p className="mt-4 text-sm font-semibold text-hot-deep">
+          Invited {invited} — they&apos;ll get an email shortly to set their password.
+        </p>
+      ) : null}
 
       {pending.length ? (
         <div className="mt-8">
@@ -109,11 +119,8 @@ export default function AdminUsersPage() {
         </div>
       ) : null}
 
-      <form onSubmit={handleAdd} className="mt-8 grid gap-4 rounded-xl border border-line-light bg-white p-6 sm:grid-cols-2">
-        <p className="font-display text-sm font-bold text-ink sm:col-span-2">Grant access directly</p>
-        <Field label="Firebase Auth UID" htmlFor="uid" required>
-          <TextInput id="uid" value={form.uid} onChange={(e) => setForm({ ...form, uid: e.target.value })} required />
-        </Field>
+      <form onSubmit={handleInvite} className="mt-8 grid gap-4 rounded-xl border border-line-light bg-white p-6 sm:grid-cols-2">
+        <p className="font-display text-sm font-bold text-ink sm:col-span-2">Invite by email</p>
         <Field label="Name" htmlFor="name" required>
           <TextInput id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
         </Field>
@@ -128,7 +135,7 @@ export default function AdminUsersPage() {
         </Field>
         <div className="sm:col-span-2">
           <Button type="submit" disabled={saving}>
-            {saving ? "Saving…" : "Grant access"}
+            {saving ? "Sending invite…" : "Send invite"}
           </Button>
         </div>
       </form>

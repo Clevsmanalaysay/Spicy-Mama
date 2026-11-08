@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Section, SectionHeading } from "@/components/ui/Section";
+import { Section } from "@/components/ui/Section";
+import { EditableSectionHeading } from "@/components/ui/EditableSectionHeading";
 import { LinkButton } from "@/components/ui/Button";
 import { ProjectCard } from "@/components/work/ProjectCard";
 import { ProjectDetailEditor } from "@/components/work/ProjectDetailEditor";
-import { getProjectBySlug, getProjects } from "@/lib/content";
+import { getProjectBySlug, getProjects, getSiteSettings } from "@/lib/content";
 
 type Params = Promise<{ slug: string }>;
 
@@ -37,7 +38,7 @@ export default async function ProjectDetailPage({ params }: { params: Params }) 
     return <ProjectDetailEditor project={null} slug={slug} />;
   }
 
-  const allProjects = await getProjects();
+  const [allProjects, settings] = await Promise.all([getProjects(), getSiteSettings()]);
   const related = allProjects.filter((p) => p.id !== project.id).slice(0, 3);
 
   const jsonLd =
@@ -63,7 +64,7 @@ export default async function ProjectDetailPage({ params }: { params: Params }) 
 
       {project.status === "published" && related.length ? (
         <Section tone="dark">
-          <SectionHeading eyebrow="Keep exploring" title="Related projects" />
+          <EditableSectionHeading settings={settings} sectionKey="work.relatedProjects" defaultEyebrow="Keep exploring" defaultTitle="Related projects" />
           <div className="mt-8 grid gap-6 sm:grid-cols-3">
             {related.map((p, i) => (
               <ProjectCard key={p.id} project={p} index={i} />
@@ -74,7 +75,7 @@ export default async function ProjectDetailPage({ params }: { params: Params }) 
 
       {project.status === "published" ? (
         <Section tone="light" className="text-center">
-          <h2 className="font-display text-3xl font-bold text-ink">Want something like this?</h2>
+          <EditableSectionHeading settings={settings} sectionKey="work.inquiryCta" defaultTitle="Want something like this?" tone="light" className="mx-auto" />
           <div className="mt-6">
             <LinkButton href="/contact?type=Production">Submit a project inquiry</LinkButton>
           </div>

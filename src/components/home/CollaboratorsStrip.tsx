@@ -5,14 +5,31 @@ import { Section } from "@/components/ui/Section";
 import { EditableText } from "@/components/edit/EditableText";
 import { AddItemButton, RemoveItemButton } from "@/components/edit/EditableListControls";
 import { useEditMode } from "@/lib/edit-mode";
-import { deleteCollaborator, saveCollaborator } from "@/lib/admin-data";
-import type { Collaborator } from "@/lib/types";
+import { deleteCollaborator, saveCollaborator, updateSiteSettings } from "@/lib/admin-data";
+import type { Collaborator, SiteSettings } from "@/lib/types";
 
-export function CollaboratorsStrip({ collaborators: initial }: { collaborators: Collaborator[] }) {
+const HEADING_KEY = "home.collaborators";
+const DEFAULT_HEADING = "Collaborators & partners";
+
+export function CollaboratorsStrip({
+  collaborators: initial,
+  settings: initialSettings,
+}: {
+  collaborators: Collaborator[];
+  settings: SiteSettings;
+}) {
   const { canEdit, editMode } = useEditMode();
   const [collaborators, setCollaborators] = useState(initial);
+  const [settings, setSettings] = useState(initialSettings);
+  const heading = settings.sectionHeadings?.[HEADING_KEY]?.title ?? DEFAULT_HEADING;
 
   if (!collaborators.length && !(canEdit && editMode)) return null;
+
+  function patchHeading(title: string) {
+    const nextMap = { ...(settings.sectionHeadings ?? {}), [HEADING_KEY]: { title } };
+    setSettings((s) => ({ ...s, sectionHeadings: nextMap }));
+    return updateSiteSettings({ sectionHeadings: nextMap });
+  }
 
   async function handleAdd() {
     const order = collaborators.length ? Math.max(...collaborators.map((c) => c.order)) + 1 : 1;
@@ -32,9 +49,15 @@ export function CollaboratorsStrip({ collaborators: initial }: { collaborators: 
 
   return (
     <Section tone="dark" className="py-10 sm:py-14">
-      <p className="text-center font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-dim">
-        Collaborators &amp; partners
-      </p>
+      {editMode ? (
+        <EditableText
+          value={heading}
+          onSave={patchHeading}
+          className="block text-center font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-dim"
+        />
+      ) : (
+        <p className="text-center font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-dim">{heading}</p>
+      )}
       <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
         {collaborators.map((c) =>
           editMode ? (

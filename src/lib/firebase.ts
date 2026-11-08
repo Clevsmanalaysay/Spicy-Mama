@@ -6,7 +6,7 @@ import { type Firestore, getFirestore } from "firebase/firestore";
 // browser-only and lives in lib/firebase-auth.ts instead. Image uploads use
 // Cloudinary, not Firebase Storage — see lib/admin-data.ts's uploadImage.
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,

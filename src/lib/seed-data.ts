@@ -572,6 +572,12 @@ export const seedSiteSettings: SiteSettings = {
     },
   ],
   closingCtaHeading: "Got a story? Let's make it spicy.",
+  aboutValues: [
+    "We make films that get noticed — lead with craft, not claims.",
+    "We're a partner, not a vendor — co-create, build with you, idea to screen.",
+    "Our house is your stage — the venue is an extension of the creative world.",
+    "Specific beats vague — credits and numbers over buzzwords.",
+  ],
   pageHero: {
     studio: {
       eyebrow: "Studio & Services",

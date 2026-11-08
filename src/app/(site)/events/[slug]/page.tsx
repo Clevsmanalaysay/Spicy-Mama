@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Section } from "@/components/ui/Section";
+import { EditableSectionHeading } from "@/components/ui/EditableSectionHeading";
 import { LinkButton } from "@/components/ui/Button";
 import { EventDetailEditor } from "@/components/events/EventDetailEditor";
-import { getEventBySlug } from "@/lib/content";
+import { getEventBySlug, getSiteSettings } from "@/lib/content";
 
 type Params = Promise<{ slug: string }>;
 
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function EventDetailPage({ params }: { params: Params }) {
   const { slug } = await params;
-  const event = await getEventBySlug(slug);
+  const [event, settings] = await Promise.all([getEventBySlug(slug), getSiteSettings()]);
   // getEventBySlug only ever finds published events (see work/[slug]/page.tsx
   // for why) — a brand-new draft isn't a 404, EventDetailEditor checks for
   // it client-side as the signed-in staff user.
@@ -55,7 +56,13 @@ export default async function EventDetailPage({ params }: { params: Params }) {
 
       {isVisible ? (
         <Section tone="light" className="text-center">
-          <h2 className="font-display text-3xl font-bold text-ink">Want the venue for your own event?</h2>
+          <EditableSectionHeading
+            settings={settings}
+            sectionKey="events.venueCta"
+            defaultTitle="Want the venue for your own event?"
+            tone="light"
+            className="mx-auto"
+          />
           <div className="mt-6">
             <LinkButton href="/venue#booking-form">Book the venue</LinkButton>
           </div>

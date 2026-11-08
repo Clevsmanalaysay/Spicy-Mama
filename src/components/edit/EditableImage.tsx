@@ -5,6 +5,7 @@ import { Upload } from "lucide-react";
 import { useEditMode } from "@/lib/edit-mode";
 import { uploadImage } from "@/lib/admin-data";
 import { PlaceholderMedia } from "@/components/ui/PlaceholderMedia";
+import { Lightbox } from "@/components/ui/Lightbox";
 import { cn } from "@/lib/utils";
 
 export function EditableImage({
@@ -16,6 +17,7 @@ export function EditableImage({
   fit = "cover",
   seed,
   label,
+  expandable = true,
 }: {
   src?: string;
   alt: string;
@@ -25,11 +27,14 @@ export function EditableImage({
   fit?: "cover" | "contain";
   seed?: number;
   label?: string;
+  /** Click-to-expand in a lightbox when not in edit mode. On by default — set false for images where that doesn't make sense (e.g. a tiny icon-like image). */
+  expandable?: boolean;
 }) {
   const { canEdit, editMode } = useEditMode();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   async function handleFile(file: File | null) {
     if (!file) return;
@@ -46,6 +51,21 @@ export function EditableImage({
   }
 
   if (!canEdit || !editMode) {
+    if (expandable && src) {
+      return (
+        <>
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(true)}
+            className={cn("focus-ring block overflow-hidden", className)}
+            aria-label={`Expand ${alt}`}
+          >
+            <PlaceholderMedia src={src} alt={alt} className="h-full w-full" fit={fit} seed={seed} label={label} />
+          </button>
+          {lightboxOpen ? <Lightbox src={src} alt={alt} onClose={() => setLightboxOpen(false)} /> : null}
+        </>
+      );
+    }
     return <PlaceholderMedia src={src} alt={alt} className={className} fit={fit} seed={seed} label={label} />;
   }
 

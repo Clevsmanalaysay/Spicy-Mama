@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { EditablePageHero } from "@/components/ui/EditablePageHero";
-import { Section, SectionHeading } from "@/components/ui/Section";
+import { Section } from "@/components/ui/Section";
+import { EditableSectionHeading } from "@/components/ui/EditableSectionHeading";
 import { LinkButton } from "@/components/ui/Button";
 import { ServiceBlocks } from "@/components/studio/ServiceBlocks";
 import { HowWeWork } from "@/components/studio/HowWeWork";
@@ -38,17 +39,21 @@ export default async function StudioPage() {
       </Section>
 
       <Section tone="dark">
-        <SectionHeading eyebrow="FAQ" title="Timelines, budgets, travel and rights." />
+        <EditableSectionHeading settings={settings} sectionKey="studio.faq" defaultEyebrow="FAQ" defaultTitle="Timelines, budgets, travel and rights." />
         <div className="mt-8 max-w-3xl">
           <Faq items={faq.sort((a, b) => a.order - b.order)} />
         </div>
       </Section>
 
       <Section tone="light" className="text-center">
-        <h2 className="font-display text-3xl font-bold text-ink sm:text-4xl">Ready to build something?</h2>
-        <p className="mx-auto mt-3 max-w-xl text-ink/70">
-          Tell us about the project and we&apos;ll come back with a plan — not a sales pitch.
-        </p>
+        <EditableSectionHeading
+          settings={settings}
+          sectionKey="studio.cta"
+          defaultTitle="Ready to build something?"
+          defaultDescription="Tell us about the project and we'll come back with a plan — not a sales pitch."
+          tone="light"
+          className="mx-auto"
+        />
         <div className="mt-6">
           <LinkButton href="/contact?type=Production">Submit a project inquiry</LinkButton>
         </div>

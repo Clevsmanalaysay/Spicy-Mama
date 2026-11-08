@@ -82,9 +82,18 @@ export function EditableText({
     setError("");
   }
 
+  // className often includes "block" (e.g. a title/paragraph meant to take
+  // its own line) — but the wrapper spans below used to be hardcoded
+  // inline-block/inline-flex regardless, so two adjacent block-intended
+  // fields (like a FAQ question and its answer) would flow side by side
+  // instead of stacking, and a width-constrained textarea would look
+  // cramped and mismatched against the full-width rendered text. Matching
+  // the wrapper's display to what the caller actually asked for fixes both.
+  const isBlock = className?.split(/\s+/).includes("block");
+
   if (!editing) {
     return (
-      <span className="inline-block max-w-full align-top">
+      <span className={cn(isBlock ? "block" : "inline-block", "max-w-full align-top")}>
         <Tag
           className={cn(
             className,
@@ -127,7 +136,7 @@ export function EditableText({
   };
 
   return (
-    <span className="inline-flex max-w-full items-start gap-1 align-top">
+    <span className={cn(isBlock ? "flex" : "inline-flex", "max-w-full items-start gap-1 align-top")}>
       {multiline ? <textarea {...commonProps} rows={3} /> : <input {...commonProps} type={type} />}
       <span className="flex shrink-0 gap-0.5">
         <button

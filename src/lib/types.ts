@@ -171,6 +171,13 @@ export interface SiteSettings {
   heroMedia?: string;
   whatWeDoTiles: WhatWeDoTile[];
   closingCtaHeading: string;
+  aboutValues: string[];
+  /**
+   * Free-form section headings keyed by a unique id per usage site (e.g.
+   * "home.featuredWork", "about.values") — see EditableSectionHeading. A
+   * key with no entry here just uses that call site's hardcoded defaults.
+   */
+  sectionHeadings?: Record<string, { eyebrow?: string; title: string; description?: string }>;
   pageHero: {
     studio: PageHeroContent;
     about: PageHeroContent;

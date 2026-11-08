@@ -115,11 +115,15 @@ service cloud.firestore {
     match /users/{uid} {
       allow get: if isSignedIn() && (request.auth.uid == uid || isAdmin());
       allow list: if isAdmin();
-      // Self-service signup: a freshly-authenticated user may create ONLY
-      // their own doc, and only in the powerless "pending" state — they
-      // can't grant themselves admin/editor. Approving/denying (updating or
-      // deleting that doc) still requires an existing admin.
-      allow create: if isSignedIn() && request.auth.uid == uid && request.resource.data.role == 'pending';
+      // Two ways a profile doc gets created:
+      // 1. Self-service signup: a freshly-authenticated user may create ONLY
+      //    their own doc, and only in the powerless "pending" state — they
+      //    can't grant themselves admin/editor.
+      // 2. Admin-initiated invite: an admin creates the new teammate's doc
+      //    directly (any role), for the Auth account they just created via
+      //    inviteStaffUser.
+      // Approving/denying/removing an existing doc still requires an admin.
+      allow create: if (isSignedIn() && request.auth.uid == uid && request.resource.data.role == 'pending') || isAdmin();
       allow update, delete: if isAdmin();
     }
 

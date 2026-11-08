@@ -35,11 +35,11 @@ export default async function HomePage() {
   return (
     <>
       <Hero settings={settings} />
-      <FeaturedWork projects={featuredProjects} />
+      <FeaturedWork projects={featuredProjects} settings={settings} />
       <WhatWeDo settings={settings} />
-      <CollaboratorsStrip collaborators={collaborators} />
-      <VenueTeaser venue={venue} />
-      <LatestEvents events={events} />
+      <CollaboratorsStrip collaborators={collaborators} settings={settings} />
+      <VenueTeaser venue={venue} settings={settings} />
+      <LatestEvents events={events} settings={settings} />
       <InstagramTeaser settings={settings} />
       <ClosingCta settings={settings} />
     </>

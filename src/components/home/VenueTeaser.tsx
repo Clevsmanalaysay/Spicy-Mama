@@ -1,9 +1,10 @@
-import { Section, SectionHeading } from "@/components/ui/Section";
+import { Section } from "@/components/ui/Section";
+import { EditableSectionHeading } from "@/components/ui/EditableSectionHeading";
 import { LinkButton } from "@/components/ui/Button";
 import { PlaceholderMedia } from "@/components/ui/PlaceholderMedia";
-import type { VenueContent } from "@/lib/types";
+import type { SiteSettings, VenueContent } from "@/lib/types";
 
-export function VenueTeaser({ venue }: { venue: VenueContent }) {
+export function VenueTeaser({ venue, settings }: { venue: VenueContent; settings: SiteSettings }) {
   const photos = venue.gallery.length ? venue.gallery.slice(0, 3) : [undefined, undefined, undefined];
   return (
     <Section tone="light">
@@ -21,11 +22,13 @@ export function VenueTeaser({ venue }: { venue: VenueContent }) {
           ))}
         </div>
         <div>
-          <SectionHeading
+          <EditableSectionHeading
+            settings={settings}
+            sectionKey="home.venueTeaser"
             tone="light"
-            eyebrow="The venue"
-            title="Our house is your stage."
-            description="A creative studio by day. Your party by night. Birthdays, launches, screenings, workshops and shoots — in a space built for bold visuals."
+            defaultEyebrow="The venue"
+            defaultTitle="Our house is your stage."
+            defaultDescription="A creative studio by day. Your party by night. Birthdays, launches, screenings, workshops and shoots — in a space built for bold visuals."
           />
           <p className="mt-4 font-display text-sm font-bold uppercase tracking-wide text-ink">
             Up to {venue.capacityStanding} standing &middot; {venue.capacitySeated} seated

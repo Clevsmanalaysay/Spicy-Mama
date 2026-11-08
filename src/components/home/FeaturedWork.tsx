@@ -1,14 +1,20 @@
-import { Section, SectionHeading } from "@/components/ui/Section";
+import { Section } from "@/components/ui/Section";
+import { EditableSectionHeading } from "@/components/ui/EditableSectionHeading";
 import { LinkButton } from "@/components/ui/Button";
 import { ProjectCard } from "@/components/work/ProjectCard";
-import type { Project } from "@/lib/types";
+import type { Project, SiteSettings } from "@/lib/types";
 
-export function FeaturedWork({ projects }: { projects: Project[] }) {
+export function FeaturedWork({ projects, settings }: { projects: Project[]; settings: SiteSettings }) {
   if (!projects.length) return null;
   return (
     <Section tone="dark">
       <div className="flex flex-wrap items-end justify-between gap-6">
-        <SectionHeading eyebrow="Featured work" title="We make films that get noticed." />
+        <EditableSectionHeading
+          settings={settings}
+          sectionKey="home.featuredWork"
+          defaultEyebrow="Featured work"
+          defaultTitle="We make films that get noticed."
+        />
         <LinkButton href="/work" variant="secondary">
           See all work
         </LinkButton>
